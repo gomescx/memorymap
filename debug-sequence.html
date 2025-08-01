@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Sequence Numbers</title>
+    <script src="jsmind/es6/jsmind.js"></script>
+    <link rel="stylesheet" type="text/css" href="jsmind/style/jsmind.css">
+</head>
+<body>
+    <div id="jsmind_container" style="width: 800px; height: 600px; border: 1px solid #ccc;"></div>
+    <button onclick="addChildNode()">Add Child to Root</button>
+    <button onclick="checkSequences()">Check Sequences</button>
+    <button onclick="toggleMetadata()">Toggle Metadata</button>
+    <input type="checkbox" id="show-metadata"> Show Metadata
+
+    <script>
+        // Initialize with some test nodes
+        var mind = {
+            meta: { name: 'Test', author: 'Test', version: '1.0' },
+            format: 'node_array',
+            data: [
+                { id: 'root', isroot: true, topic: 'Root Node' },
+                { id: 'child1', parentid: 'root', topic: 'Child 1' },
+                { id: 'child2', parentid: 'root', topic: 'Child 2' },
+                { id: 'grandchild1', parentid: 'child1', topic: 'Grandchild 1' }
+            ]
+        };
+
+        var options = {
+            container: 'jsmind_container',
+            theme: 'primary'
+        };
+
+        var jm = new jsMind(options);
+        jm.show(mind);
+
+        function setNodeSequence(node, sequence) {
+            if (!node.data) {
+                node.data = {};
+            }
+            node.data.sequence = sequence;
+            console.log('Set sequence', sequence, 'for node', node.topic);
+        }
+
+        function updateAllSequenceNumbers() {
+            console.log('=== UPDATING SEQUENCES ===');
+            var rootNode = jm.get_node('root');
+            if (!rootNode) {
+                console.log('No root found');
+                return;
+            }
+
+            setNodeSequence(rootNode, '');
+            
+            if (rootNode.children && rootNode.children.length > 0) {
+                updateChildrenSequences(rootNode, '');
+            }
+        }
+
+        function updateChildrenSequences(parentNode, parentSequence) {
+            if (!parentNode.children || parentNode.children.length === 0) {
+                return;
+            }
+
+            for (var i = 0; i < parentNode.children.length; i++) {
+                var childId = parentNode.children[i];
+                var childNode = jm.get_node(childId);
+                if (childNode) {
+                    var sequenceNumber;
+                    if (parentSequence === '') {
+                        sequenceNumber = (i + 1).toString();
+                    } else {
+                        sequenceNumber = parentSequence + '.' + (i + 1).toString();
+                    }
+                    
+                    setNodeSequence(childNode, sequenceNumber);
+                    updateChildrenSequences(childNode, sequenceNumber);
+                }
+            }
+        }
+
+        function checkSequences() {
+            console.log('=== CHECKING SEQUENCES ===');
+            var allData = jm.get_data();
+            if (allData && allData.data) {
+                for (var i = 0; i < allData.data.length; i++) {
+                    var nodeData = allData.data[i];
+                    var node = jm.get_node(nodeData.id);
+                    console.log('Node', nodeData.id, '(' + nodeData.topic + '):', 
+                               'data =', node.data, 
+                               'sequence =', node.data ? node.data.sequence : 'UNDEFINED');
+                }
+            }
+        }
+
+        function addChildNode() {
+            var newId = 'node_' + Date.now();
+            jm.add_node('root', newId, 'New Child');
+            setTimeout(function() {
+                updateAllSequenceNumbers();
+                checkSequences();
+            }, 100);
+        }
+
+        function toggleMetadata() {
+            var checkbox = document.getElementById('show-metadata');
+            var allNodeElements = document.querySelectorAll('jmnode[nodeid]');
+            
+            for (var i = 0; i < allNodeElements.length; i++) {
+                var nodeElement = allNodeElements[i];
+                var nodeId = nodeElement.getAttribute('nodeid');
+                var node = jm.get_node(nodeId);
+                
+                if (node) {
+                    var existingMetadata = nodeElement.querySelector('.metadata');
+                    if (existingMetadata) {
+                        existingMetadata.remove();
+                    }
+                    
+                    if (checkbox.checked) {
+                        var sequence = (node.data && node.data.sequence) ? node.data.sequence : 'NO_SEQ';
+                        var metadataDiv = document.createElement('div');
+                        metadataDiv.className = 'metadata';
+                        metadataDiv.style.fontSize = '10px';
+                        metadataDiv.style.color = '#666';
+                        metadataDiv.style.borderTop = '1px solid #ccc';
+                        metadataDiv.style.paddingTop = '2px';
+                        metadataDiv.textContent = '# ' + sequence;
+                        nodeElement.appendChild(metadataDiv);
+                    }
+                }
+            }
+        }
+
+        // Initialize sequences on load
+        setTimeout(function() {
+            updateAllSequenceNumbers();
+            console.log('Initial setup complete');
+        }, 500);
+    </script>
+</body>
+</html>

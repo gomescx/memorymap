@@ -170,6 +170,22 @@
                 font-style: italic;
                 padding: 20px;
             }
+            
+            /* Node metadata display styles */
+            .jmnode-metadata {
+                font-size: 11px;
+                color: #666;
+                padding-top: 2px;
+                margin-top: 2px;
+                margin-bottom: 4px;
+                background: rgba(248, 249, 250, 0.8);
+                border-radius: 0 0 4px 4px;
+            }
+            
+            .jmnode-metadata-content {
+                padding: 1px 4px;
+                font-family: 'Courier New', monospace;
+            }
         </style>
     </head>
 
@@ -187,6 +203,17 @@
             <div class="metadata-sidebar">
                 <h3>📊 Task Metadata</h3>
                 
+                <!-- Toggle Metadata Display -->
+                <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;">
+                    <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal; margin: 0;">
+                        <input type="checkbox" id="toggle-metadata-display" style="margin-right: 10px; cursor: pointer;">
+                        <span>📋 Show metadata on nodes</span>
+                    </label>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px; margin-left: 22px;">
+                        Display sequence, invested time, and elapsed time on each node
+                    </div>
+                </div>
+                
                 <div id="metadata-content">
                     <div id="no-selection" class="no-selection">
                         Select a node to view and edit its metadata.
@@ -200,8 +227,8 @@
                         
                         <form class="metadata-form" id="metadata-form">
                             <div class="form-group">
-                                <label for="node-sequence">Sequence Number:</label>
-                                <input type="number" id="node-sequence" min="0" step="1" placeholder="Enter sequence (e.g., 1, 2, 3...)">
+                                <label for="node-sequence">Sequence Number (Auto-calculated):</label>
+                                <input type="text" id="node-sequence" readonly style="background-color: #f8f9fa; cursor: not-allowed;" placeholder="Automatically assigned...">
                             </div>
                             
                             <div class="form-group">
@@ -233,8 +260,14 @@
             <p><kbd>Enter</kbd> - Create sibling node | <kbd>Tab</kbd> - Create child node | <kbd>F2</kbd> - Edit node | <kbd>Delete</kbd> - Delete node and its children | <kbd>Esc</kbd> - Cancel editing</p>
             <p style="margin-top: 10px;"><strong>Instructions:</strong> Click on the "Main Node" first to select it, then use the keyboard shortcuts.</p>
             <p style="margin-top: 5px; font-size: 12px; color: #666;"><strong>Note:</strong> Deleting a node will also delete all its child nodes, but never parent nodes.</p>
-            <p style="margin-top: 5px; font-size: 12px; color: #007bff;"><strong>New:</strong> Use the metadata sidebar on the right to add sequence numbers, invested time, and elapsed time to each task.</p>
+            <p style="margin-top: 5px; font-size: 12px; color: #007bff;"><strong>New:</strong> Use the metadata sidebar on the right to add invested time and elapsed time to each task.</p>
+            <p style="margin-top: 5px; font-size: 12px; color: #28a745;"><strong>Auto-Sequencing:</strong> Sequence numbers are automatically assigned using a clockwise convention starting from 1 o'clock position (e.g., 1, 1.1, 1.2, 2, 2.1).</p>
+            <p style="margin-top: 5px; font-size: 12px; color: #6f42c1;"><strong>Metadata Display:</strong> Use the checkbox in the sidebar to show/hide metadata (sequence, invested time, elapsed time) directly on nodes.</p>
             <p style="margin-top: 5px; font-size: 12px; color: #666;">Check the browser console (F12) for debug messages.</p>
+            
+            <!-- Debug button -->
+            <button onclick="createTestNodes()" style="margin-top: 10px; padding: 5px 10px; background: #28a745; color: white; border: none; border-radius: 3px;">Create Test Nodes</button>
+            <button onclick="debugSequences()" style="margin-left: 10px; padding: 5px 10px; background: #007bff; color: white; border: none; border-radius: 3px;">Debug Sequences</button>
         </div>
 
         <script src="jsmind/es6/jsmind.js"></script>
@@ -252,6 +285,43 @@
                     }
                 });
                 
+                // Handle node structure changes (add/remove/move)
+                jm.add_event_listener(function(type, data) {
+                    if (type === 'add_node' || type === 'remove_node' || type === 'move_node') {
+                        // Recalculate all sequences after structure changes
+                        setTimeout(function() {
+                            updateAllSequenceNumbers(jm);
+                            updateMetadataSidebar(jm); // Refresh sidebar to show updated sequences
+                            
+                            // If a new node was added and metadata display is enabled, show its metadata
+                            if (type === 'add_node' && document.getElementById('toggle-metadata-display').checked) {
+                                var newNode = jm.get_node(data.nodeid);
+                                if (newNode) {
+                                    setTimeout(function() {
+                                        // Find the new node element and add metadata
+                                        var nodeElement = document.querySelector('jmnode[nodeid="' + newNode.id + '"]');
+                                        if (nodeElement) {
+                                            addMetadataToElement(nodeElement, newNode);
+                                        }
+                                    }, 200);
+                                }
+                            }
+                        }, 100);
+                    }
+                });
+                
+                // Handle drag operations if draggable-node plugin is loaded
+                jm.add_event_listener(function(type, data) {
+                    if (type === 'drag_node') {
+                        // Recalculate sequences after drag operations (visual repositioning)
+                        setTimeout(function() {
+                            updateAllSequenceNumbers(jm);
+                            updateMetadataSidebar(jm); // Refresh sidebar
+                            console.log('Sequences recalculated after drag operation');
+                        }, 200);
+                    }
+                });
+                
                 // Handle save button
                 document.getElementById('save-metadata').addEventListener('click', function() {
                     saveNodeMetadata(jm);
@@ -265,6 +335,16 @@
                 // Auto-validate when invested/elapsed time changes
                 document.getElementById('invested-time').addEventListener('input', validateTimes);
                 document.getElementById('elapsed-time').addEventListener('input', validateTimes);
+                
+                // Handle metadata display toggle
+                document.getElementById('toggle-metadata-display').addEventListener('change', function() {
+                    var isEnabled = this.checked;
+                    
+                    // Direct approach: find all node elements and add/remove metadata
+                    setTimeout(function() {
+                        toggleAllNodesMetadata(jm, isEnabled);
+                    }, 50);
+                });
                 
                 // Also handle clicks on the mindmap container
                 document.getElementById('jsmind_container').addEventListener('click', function(e) {
@@ -328,7 +408,7 @@
                 var selected = jm.get_selected_node();
                 if (!selected) return;
                 
-                var sequence = parseInt(document.getElementById('node-sequence').value) || 0;
+                // Only save user-editable fields (not sequence, which is auto-calculated)
                 var investedTime = parseFloat(document.getElementById('invested-time').value) || 0;
                 var elapsedTime = parseFloat(document.getElementById('elapsed-time').value) || 0;
                 
@@ -340,19 +420,21 @@
                     document.getElementById('validation-warning').style.display = 'none';
                 }
                 
-                // Update node data
+                // Update node data (preserve auto-calculated sequence)
                 if (!selected.data) {
                     selected.data = {};
                 }
-                selected.data.sequence = sequence;
                 selected.data.invested_time = investedTime;
                 selected.data.elapsed_time = elapsedTime;
                 
                 console.log('Saved metadata for node:', selected.topic, {
-                    sequence: sequence,
+                    sequence: selected.data.sequence, // Keep existing sequence
                     invested_time: investedTime,
                     elapsed_time: elapsedTime
                 });
+                
+                // Update node metadata display if enabled
+                updateNodeMetadataDisplay(selected);
                 
                 // Show success feedback (optional)
                 var saveBtn = document.getElementById('save-metadata');
@@ -393,6 +475,364 @@
                 }
             }
 
+            /**
+             * Automatic sequence numbering using clockwise hierarchical convention
+             * Starting from top-right (1 o'clock) position
+             */
+            function updateAllSequenceNumbers(jm) {
+                console.log('=== UPDATING ALL SEQUENCE NUMBERS ===');
+                
+                var rootNode = jm.get_node('root');
+                if (!rootNode) {
+                    return;
+                }
+                
+                // Set root sequence to empty (or could be "0")
+                setNodeSequence(rootNode, '');
+                
+                // Process all children recursively
+                if (rootNode.children && rootNode.children.length > 0) {
+                    updateChildrenSequences(jm, rootNode, '');
+                }
+                
+                // Refresh metadata display for all nodes if enabled
+                var toggle = document.getElementById('toggle-metadata-display');
+                if (toggle && toggle.checked) {
+                    setTimeout(function() {
+                        toggleAllNodesMetadata(jm, true); // Refresh all metadata
+                    }, 100);
+                }
+                
+                console.log('=== SEQUENCE UPDATE COMPLETE ===');
+            }
+            
+            function updateChildrenSequences(jm, parentNode, parentSequence) {
+                if (!parentNode.children || parentNode.children.length === 0) {
+                    return;
+                }
+                
+                // Get all child nodes with their positions
+                var childrenWithPositions = [];
+                for (var i = 0; i < parentNode.children.length; i++) {
+                    var childId = parentNode.children[i];
+                    var childNode = jm.get_node(childId);
+                    if (childNode) {
+                        var position = getNodePosition(jm, childNode);
+                        childrenWithPositions.push({
+                            node: childNode,
+                            position: position,
+                            angle: position.angle
+                        });
+                    }
+                }
+                
+                // Sort children by angle (clockwise from top-right, starting at 1 o'clock ≈ 30°)
+                // Convert angles so that 1 o'clock position (30°) becomes 0° for sorting
+                childrenWithPositions.sort(function(a, b) {
+                    var angleA = normalizeAngleFrom1OClock(a.angle);
+                    var angleB = normalizeAngleFrom1OClock(b.angle);
+                    return angleA - angleB;
+                });
+                
+                // Assign sequence numbers
+                for (var i = 0; i < childrenWithPositions.length; i++) {
+                    var childData = childrenWithPositions[i];
+                    var childNode = childData.node;
+                    
+                    // Calculate sequence number
+                    var sequenceNumber;
+                    if (parentSequence === '') {
+                        // Direct children of root: 1, 2, 3...
+                        sequenceNumber = (i + 1).toString();
+                    } else {
+                        // Children of numbered nodes: 1.1, 1.2, 2.1, 2.2...
+                        sequenceNumber = parentSequence + '.' + (i + 1).toString();
+                    }
+                    
+                    setNodeSequence(childNode, sequenceNumber);
+                    
+                    console.log('Assigned sequence', sequenceNumber, 'to node', childNode.topic, 
+                               'at angle', childData.angle.toFixed(1) + '°');
+                    
+                    // Recursively process this child's children
+                    updateChildrenSequences(jm, childNode, sequenceNumber);
+                }
+            }
+            
+            function getNodePosition(jm, node) {
+                // Get the visual position of the node relative to its parent
+                var view = jm.view;
+                var nodeElement = view.get_element(node.id);
+                
+                if (!nodeElement) {
+                    // Fallback: return default position
+                    return { x: 0, y: 0, angle: 0 };
+                }
+                
+                var nodeRect = nodeElement.getBoundingClientRect();
+                var nodeCenterX = nodeRect.left + nodeRect.width / 2;
+                var nodeCenterY = nodeRect.top + nodeRect.height / 2;
+                
+                // Get parent position
+                var parentNode = node.parent ? jm.get_node(node.parent) : null;
+                var parentCenterX, parentCenterY;
+                
+                if (parentNode) {
+                    var parentElement = view.get_element(parentNode.id);
+                    if (parentElement) {
+                        var parentRect = parentElement.getBoundingClientRect();
+                        parentCenterX = parentRect.left + parentRect.width / 2;
+                        parentCenterY = parentRect.top + parentRect.height / 2;
+                    } else {
+                        // Fallback to container center
+                        var container = document.getElementById('jsmind_container');
+                        var containerRect = container.getBoundingClientRect();
+                        parentCenterX = containerRect.left + containerRect.width / 2;
+                        parentCenterY = containerRect.top + containerRect.height / 2;
+                    }
+                } else {
+                    // For root node, use container center
+                    var container = document.getElementById('jsmind_container');
+                    var containerRect = container.getBoundingClientRect();
+                    parentCenterX = containerRect.left + containerRect.width / 2;
+                    parentCenterY = containerRect.top + containerRect.height / 2;
+                }
+                
+                // Calculate relative position
+                var deltaX = nodeCenterX - parentCenterX;
+                var deltaY = nodeCenterY - parentCenterY;
+                
+                // Calculate angle (in degrees, 0° = right/east, increasing clockwise)
+                var angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+                if (angle < 0) angle += 360; // Normalize to 0-360
+                
+                return {
+                    x: deltaX,
+                    y: deltaY,
+                    angle: angle
+                };
+            }
+            
+            function normalizeAngleFrom1OClock(angle) {
+                // Convert angle so that 1 o'clock position (30°) becomes 0° for sorting
+                // 1 o'clock = 30°, 3 o'clock = 90°, 6 o'clock = 180°, 9 o'clock = 270°, 12 o'clock = 360°/0°
+                var normalized = angle - 30; // Shift so 1 o'clock becomes 0°
+                if (normalized < 0) normalized += 360; // Handle negative angles
+                return normalized;
+            }
+            
+            function setNodeSequence(node, sequence) {
+                if (!node.data) {
+                    node.data = {};
+                }
+                node.data.sequence = sequence;
+                
+                // Also update the input field if this node is currently selected
+                var selected = currentSelectedNode;
+                if (selected && selected.id === node.id) {
+                    document.getElementById('node-sequence').value = sequence;
+                }
+                
+                // Update node display if metadata is currently shown
+                var toggle = document.getElementById('toggle-metadata-display');
+                if (toggle && toggle.checked) {
+                    updateNodeMetadataDisplay(node);
+                }
+            }
+
+            /**
+             * Toggle metadata display on all nodes
+             */
+            function toggleMetadataDisplay(jm, isEnabled) {
+                console.log('toggleMetadataDisplay called with isEnabled:', isEnabled);
+                
+                var allData = jm.get_data();
+                console.log('Mind map data:', allData);
+                
+                if (!allData || !allData.data) {
+                    console.warn('No data found in mind map');
+                    return;
+                }
+                
+                console.log('Found', allData.data.length, 'nodes to process');
+                
+                // Update all nodes
+                for (var i = 0; i < allData.data.length; i++) {
+                    var nodeData = allData.data[i];
+                    var node = jm.get_node(nodeData.id);
+                    console.log('Processing node:', nodeData.id, node ? node.topic : 'NOT FOUND');
+                    
+                    if (node) {
+                        if (isEnabled) {
+                            showNodeMetadata(jm, node);
+                        } else {
+                            hideNodeMetadata(jm, node);
+                        }
+                    }
+                }
+                
+                console.log('toggleMetadataDisplay completed');
+            }
+            
+            function showNodeMetadata(jm, node) {
+                // This function is now handled by the custom renderer
+            }
+            
+            function hideNodeMetadata(jm, node) {
+                // This function is now handled by the custom renderer
+            }
+            
+            function toggleMetadataDisplay(jm, isEnabled) {
+                // This function is now handled by forcing a re-render
+            }
+            
+            function hideNodeMetadata(jm, node) {
+                console.log('hideNodeMetadata called for node:', node.topic, 'ID:', node.id);
+                
+                var nodeElement = jm.view.get_element(node.id);
+                if (!nodeElement) {
+                    // Try alternative method
+                    var allElements = document.querySelectorAll('[nodeid="' + node.id + '"]');
+                    for (var i = 0; i < allElements.length; i++) {
+                        if (allElements[i].tagName.toLowerCase() === 'jmnode') {
+                            nodeElement = allElements[i];
+                            break;
+                        }
+                    }
+                }
+                
+                if (!nodeElement) {
+                    console.warn('Could not find DOM element for node:', node.id);
+                    return;
+                }
+                
+                var existingMetadata = nodeElement.querySelector('.jmnode-metadata');
+                if (existingMetadata) {
+                    existingMetadata.remove();
+                    console.log('Removed metadata from node:', node.topic);
+                } else {
+                    console.log('No metadata found to remove from node:', node.topic);
+                }
+            }
+            
+            function updateNodeMetadataDisplay(node) {
+                // Update metadata display using custom renderer
+                var jm = window.mindMap;
+                if (!jm) return;
+                
+                // Force re-render of the specific node
+                setTimeout(function() {
+                    jm.view.update_node(node);
+                }, 10);
+            }
+            
+            function formatTime(hours) {
+                // Simple formatting for now - will be enhanced in User Story 3
+                if (hours === 0) return '0h';
+                if (hours < 1) {
+                    var minutes = Math.round(hours * 60);
+                    return minutes + 'm';
+                }
+                if (hours % 1 === 0) {
+                    return hours + 'h';
+                } else {
+                    return hours.toFixed(1) + 'h';
+                }
+            }
+            
+            /**
+             * Add metadata directly to a node element (used in custom rendering)
+             */
+            function addMetadataToElement(element, node) {
+                // Remove existing metadata
+                var existingMetadata = element.querySelector('.jmnode-metadata');
+                if (existingMetadata) {
+                    existingMetadata.remove();
+                }
+                
+                // Get sequence for title display
+                var sequence = (node.data && node.data.sequence) ? node.data.sequence : '';
+                
+                // Update the main title to include sequence (but not for root)
+                var titleText = node.topic;
+                if (node.id !== 'root' && sequence) {
+                    titleText += ' [# ' + sequence + ']';
+                } else if (node.id !== 'root' && !sequence) {
+                    titleText += ' [# ?]'; // Debug: show when sequence is missing for non-root nodes
+                }
+                // Root node shows just the title without any sequence
+                element.textContent = titleText;
+                
+                // Create metadata display for times only
+                var metadataDiv = document.createElement('div');
+                metadataDiv.className = 'jmnode-metadata';
+                
+                var metadataContent = document.createElement('div');
+                metadataContent.className = 'jmnode-metadata-content';
+                
+                // Format time metadata only
+                var investedTime = (node.data && node.data.invested_time) ? formatTime(node.data.invested_time) : '0h';
+                var elapsedTime = (node.data && node.data.elapsed_time) ? formatTime(node.data.elapsed_time) : '0h';
+                
+                var metadataText = 'I: ' + investedTime + '  E: ' + elapsedTime;
+                
+                metadataContent.textContent = metadataText;
+                metadataContent.style.fontSize = '11px';
+                metadataContent.style.color = '#666';
+                metadataContent.style.paddingTop = '2px';
+                metadataContent.style.marginTop = '2px';
+                metadataContent.style.fontFamily = 'Courier New, monospace';
+                
+                metadataDiv.appendChild(metadataContent);
+                element.appendChild(metadataDiv);
+                
+                // Add some padding to the node itself to improve visual separation
+                element.style.paddingBottom = '6px';
+            }
+            
+            /**
+             * Toggle metadata display on all nodes using direct DOM manipulation
+             */
+            function toggleAllNodesMetadata(jm, isEnabled) {
+                // Get all node elements directly from the DOM
+                var allNodeElements = document.querySelectorAll('jmnode[nodeid]');
+                
+                for (var i = 0; i < allNodeElements.length; i++) {
+                    var nodeElement = allNodeElements[i];
+                    var nodeId = nodeElement.getAttribute('nodeid');
+                    var node = jm.get_node(nodeId);
+                    
+                    if (node) {
+                        if (isEnabled) {
+                            addMetadataToElement(nodeElement, node);
+                        } else {
+                            // Remove metadata and restore original title
+                            var existingMetadata = nodeElement.querySelector('.jmnode-metadata');
+                            if (existingMetadata) {
+                                existingMetadata.remove();
+                            }
+                            // Restore original title without sequence
+                            nodeElement.textContent = node.topic;
+                            // Reset node padding
+                            nodeElement.style.paddingBottom = '';
+                        }
+                    }
+                }
+            }
+            
+            /**
+             * Ensure metadata display is consistent across all nodes
+             */
+            function ensureMetadataDisplayConsistency(jm) {
+                var toggle = document.getElementById('toggle-metadata-display');
+                if (!toggle) return;
+                
+                // Apply current toggle state to all nodes
+                setTimeout(function() {
+                    toggleAllNodesMetadata(jm, toggle.checked);
+                }, 100);
+            }
+
             function initializeMindMap() {
                 // Simple mind map with just the main node
                 var mind = {
@@ -406,11 +846,8 @@
                         { 
                             id: 'root', 
                             isroot: true, 
-                            topic: 'Main Node',
-                            // Extended data model for pilot
-                            sequence: 1,
-                            invested_time: 0,
-                            elapsed_time: 0
+                            topic: 'Main Node'
+                            // Note: Extended data will be added via .data property by sequence numbering
                         }
                     ],
                 };
@@ -418,7 +855,23 @@
                 var options = {
                     container: 'jsmind_container',
                     editable: true,
-                    theme: 'primary'
+                    theme: 'primary',
+                    view: {
+                        custom_node_render: function(jm, element, node) {
+                            // Default rendering
+                            element.textContent = node.topic;
+                            
+                            // Add metadata if toggle is enabled (for newly created nodes)
+                            setTimeout(function() {
+                                var toggle = document.getElementById('toggle-metadata-display');
+                                if (toggle && toggle.checked) {
+                                    addMetadataToElement(element, node);
+                                }
+                            }, 100); // Longer delay to ensure DOM is ready
+                            
+                            return true; // Indicate we handled the rendering
+                        }
+                    }
                 };
                 
                 var jm = new jsMind(options);
@@ -427,18 +880,96 @@
                 // Initialize metadata handling
                 setupMetadataHandling(jm);
                 
+                // Initialize root node data structure
+                var rootNode = jm.get_node('root');
+                if (rootNode && !rootNode.data) {
+                    rootNode.data = {
+                        sequence: '',
+                        invested_time: 0,
+                        elapsed_time: 0
+                    };
+                    console.log('Initialized root node data structure');
+                }
+                
+                // Initial sequence numbering
+                setTimeout(function() {
+                    console.log('Calling initial updateAllSequenceNumbers...');
+                    updateAllSequenceNumbers(jm);
+                    
+                    // Debug: List all nodes and their data
+                    var allData = jm.get_data();
+                    console.log('All nodes after sequence update:', allData);
+                    
+                    if (allData && allData.data) {
+                        for (var i = 0; i < allData.data.length; i++) {
+                            var nodeData = allData.data[i];
+                            var node = jm.get_node(nodeData.id);
+                            console.log('Node', nodeData.id, '(' + nodeData.topic + ') data:', node ? node.data : 'NOT FOUND');
+                        }
+                    }
+                }, 200);
+                
                 // Select the root node initially so keyboard shortcuts work
                 setTimeout(function() {
                     jm.select_node('root');
                     console.log('Root node selected');
                     updateMetadataSidebar(jm); // Update sidebar with root selection
-                }, 100);
+                }, 300);
                 
                 // Add FreeMind-like keyboard shortcuts
                 setupFreeMindShortcuts(jm);
                 
                 // Store reference globally for testing
                 window.mindMap = jm;
+                
+                // Add a test function to create sample nodes
+                window.createTestNodes = function() {
+                    console.log('Creating test nodes...');
+                    jm.select_node('root');
+                    
+                    // Add first child
+                    var child1Id = 'child_' + Date.now();
+                    jm.add_node('root', child1Id, 'Task 1');
+                    
+                    setTimeout(function() {
+                        // Add second child
+                        var child2Id = 'child_' + (Date.now() + 1);
+                        jm.add_node('root', child2Id, 'Task 2');
+                        
+                        setTimeout(function() {
+                            // Add grandchild
+                            var grandchildId = 'grandchild_' + (Date.now() + 2);
+                            jm.add_node(child1Id, grandchildId, 'Task 1.1');
+                            
+                            console.log('Test nodes created. Updating sequences...');
+                            setTimeout(function() {
+                                updateAllSequenceNumbers(jm);
+                            }, 200);
+                        }, 100);
+                    }, 100);
+                };
+                
+                // Add debug function to check sequences
+                window.debugSequences = function() {
+                    console.log('=== DEBUG SEQUENCES ===');
+                    var allData = jm.get_data();
+                    if (allData && allData.data) {
+                        for (var i = 0; i < allData.data.length; i++) {
+                            var nodeInfo = allData.data[i];
+                            var node = jm.get_node(nodeInfo.id);
+                            console.log('Node', nodeInfo.id, '(' + nodeInfo.topic + '):', {
+                                hasData: !!node.data,
+                                data: node.data,
+                                sequence: node.data ? node.data.sequence : 'NO DATA'
+                            });
+                        }
+                    }
+                };
+                
+                // Ensure metadata display consistency after full initialization
+                setTimeout(function() {
+                    ensureMetadataDisplayConsistency(jm);
+                }, 500);
                 
                 console.log('Mind map initialized with Main Node');
                 return jm;
@@ -481,7 +1012,7 @@
                                 if (selected_node.id === 'root') {
                                     var new_id = 'node_' + Date.now();
                                     jm.add_node('root', new_id, 'New Node', {
-                                        sequence: 0,
+                                        sequence: '',
                                         invested_time: 0,
                                         elapsed_time: 0
                                     });
@@ -493,7 +1024,7 @@
                                     if (parent) {
                                         var new_id = 'node_' + Date.now();
                                         jm.add_node(parent.id, new_id, 'New Node', {
-                                            sequence: 0,
+                                            sequence: '',
                                             invested_time: 0,
                                             elapsed_time: 0
                                         });
@@ -510,7 +1041,7 @@
                             console.log('Creating child node');
                             var new_id = 'node_' + Date.now();
                             jm.add_node(selected_node.id, new_id, 'New Child', {
-                                sequence: 0,
+                                sequence: '',
                                 invested_time: 0,
                                 elapsed_time: 0
                             });
