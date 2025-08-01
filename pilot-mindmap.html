@@ -63,6 +63,113 @@
                 font-family: monospace;
                 font-size: 12px;
             }
+            
+            /* Metadata Sidebar Styles */
+            .main-container {
+                display: flex;
+                gap: 20px;
+            }
+            
+            .mindmap-section {
+                flex: 1;
+            }
+            
+            .metadata-sidebar {
+                width: 300px;
+                background: #ffffff;
+                border: 2px solid #ddd;
+                border-radius: 8px;
+                padding: 20px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                height: fit-content;
+            }
+            
+            .metadata-sidebar h3 {
+                margin-top: 0;
+                color: #333;
+                font-size: 18px;
+                border-bottom: 2px solid #007bff;
+                padding-bottom: 10px;
+            }
+            
+            .metadata-form {
+                margin-top: 15px;
+            }
+            
+            .form-group {
+                margin-bottom: 15px;
+            }
+            
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+                color: #555;
+            }
+            
+            .form-group input {
+                width: 100%;
+                padding: 8px 12px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 14px;
+                box-sizing: border-box;
+            }
+            
+            .form-group input:focus {
+                outline: none;
+                border-color: #007bff;
+                box-shadow: 0 0 0 2px rgba(0,123,255,.25);
+            }
+            
+            .btn {
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 14px;
+                margin-right: 10px;
+            }
+            
+            .btn:hover {
+                background: #0056b3;
+            }
+            
+            .btn-secondary {
+                background: #6c757d;
+            }
+            
+            .btn-secondary:hover {
+                background: #545b62;
+            }
+            
+            .node-info {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 4px;
+                margin-bottom: 15px;
+                border-left: 4px solid #007bff;
+            }
+            
+            .node-info h4 {
+                margin: 0 0 10px 0;
+                color: #333;
+            }
+            
+            .node-path {
+                font-size: 12px;
+                color: #666;
+                font-style: italic;
+            }
+            
+            .no-selection {
+                text-align: center;
+                color: #666;
+                font-style: italic;
+                padding: 20px;
+            }
         </style>
     </head>
 
@@ -72,19 +179,220 @@
             <p>Clean mind mapping interface with FreeMind-like keyboard shortcuts</p>
         </div>
         
-        <div id="jsmind_container"></div>
+        <div class="main-container">
+            <div class="mindmap-section">
+                <div id="jsmind_container"></div>
+            </div>
+            
+            <div class="metadata-sidebar">
+                <h3>📊 Task Metadata</h3>
+                
+                <div id="metadata-content">
+                    <div id="no-selection" class="no-selection">
+                        Select a node to view and edit its metadata.
+                    </div>
+                    
+                    <div id="metadata-editor" style="display: none;">
+                        <div class="node-info">
+                            <h4 id="selected-node-title">Node Title</h4>
+                            <div id="selected-node-path" class="node-path">Path will appear here</div>
+                        </div>
+                        
+                        <form class="metadata-form" id="metadata-form">
+                            <div class="form-group">
+                                <label for="node-sequence">Sequence Number:</label>
+                                <input type="number" id="node-sequence" min="0" step="1" placeholder="Enter sequence (e.g., 1, 2, 3...)">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="invested-time">Invested Time (hours):</label>
+                                <input type="number" id="invested-time" min="0" step="0.25" placeholder="e.g., 2.5">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="elapsed-time">Elapsed Time (hours):</label>
+                                <input type="number" id="elapsed-time" min="0" step="0.25" placeholder="e.g., 3.0">
+                            </div>
+                            
+                            <div style="margin-top: 20px;">
+                                <button type="button" class="btn" id="save-metadata">Save Changes</button>
+                                <button type="button" class="btn btn-secondary" id="reset-metadata">Reset</button>
+                            </div>
+                        </form>
+                        
+                        <div id="validation-warning" style="display: none; color: #dc3545; margin-top: 15px; padding: 10px; background: #f8d7da; border-radius: 4px; font-size: 14px;">
+                            ⚠️ Warning: Invested time cannot be greater than elapsed time!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <div class="shortcuts">
             <h3>Keyboard Shortcuts (FreeMind-like)</h3>
             <p><kbd>Enter</kbd> - Create sibling node | <kbd>Tab</kbd> - Create child node | <kbd>F2</kbd> - Edit node | <kbd>Delete</kbd> - Delete node and its children | <kbd>Esc</kbd> - Cancel editing</p>
             <p style="margin-top: 10px;"><strong>Instructions:</strong> Click on the "Main Node" first to select it, then use the keyboard shortcuts.</p>
             <p style="margin-top: 5px; font-size: 12px; color: #666;"><strong>Note:</strong> Deleting a node will also delete all its child nodes, but never parent nodes.</p>
+            <p style="margin-top: 5px; font-size: 12px; color: #007bff;"><strong>New:</strong> Use the metadata sidebar on the right to add sequence numbers, invested time, and elapsed time to each task.</p>
             <p style="margin-top: 5px; font-size: 12px; color: #666;">Check the browser console (F12) for debug messages.</p>
         </div>
 
         <script src="jsmind/es6/jsmind.js"></script>
         <script src="jsmind/es6/jsmind.draggable-node.js"></script>
         <script type="text/javascript">
+            // Global variable to track current selected node
+            var currentSelectedNode = null;
+            
+            function setupMetadataHandling(jm) {
+                // Handle node selection changes
+                jm.add_event_listener(function(type, data) {
+                    if (type === 'select_node') {
+                        currentSelectedNode = data.node;
+                        updateMetadataSidebar(jm);
+                    }
+                });
+                
+                // Handle save button
+                document.getElementById('save-metadata').addEventListener('click', function() {
+                    saveNodeMetadata(jm);
+                });
+                
+                // Handle reset button
+                document.getElementById('reset-metadata').addEventListener('click', function() {
+                    resetMetadataForm(jm);
+                });
+                
+                // Auto-validate when invested/elapsed time changes
+                document.getElementById('invested-time').addEventListener('input', validateTimes);
+                document.getElementById('elapsed-time').addEventListener('input', validateTimes);
+                
+                // Also handle clicks on the mindmap container
+                document.getElementById('jsmind_container').addEventListener('click', function(e) {
+                    setTimeout(function() {
+                        var selected = jm.get_selected_node();
+                        if (selected && selected !== currentSelectedNode) {
+                            currentSelectedNode = selected;
+                            updateMetadataSidebar(jm);
+                        }
+                    }, 10);
+                });
+            }
+            
+            function updateMetadataSidebar(jm) {
+                var selected = jm.get_selected_node();
+                var noSelectionDiv = document.getElementById('no-selection');
+                var editorDiv = document.getElementById('metadata-editor');
+                
+                if (!selected) {
+                    noSelectionDiv.style.display = 'block';
+                    editorDiv.style.display = 'none';
+                    return;
+                }
+                
+                noSelectionDiv.style.display = 'none';
+                editorDiv.style.display = 'block';
+                
+                // Update node info
+                document.getElementById('selected-node-title').textContent = selected.topic;
+                document.getElementById('selected-node-path').textContent = getNodePath(jm, selected);
+                
+                // Update form fields with current data
+                var data = selected.data || {};
+                document.getElementById('node-sequence').value = data.sequence || '';
+                document.getElementById('invested-time').value = data.invested_time || '';
+                document.getElementById('elapsed-time').value = data.elapsed_time || '';
+                
+                // Clear any validation warning
+                document.getElementById('validation-warning').style.display = 'none';
+                
+                console.log('Updated metadata sidebar for node:', selected.topic, 'data:', data);
+            }
+            
+            function getNodePath(jm, node) {
+                var path = [];
+                var current = node;
+                
+                while (current && current.id !== 'root') {
+                    path.unshift(current.topic);
+                    current = current.parent ? jm.get_node(current.parent) : null;
+                }
+                
+                if (node.id === 'root') {
+                    return 'Root Node';
+                }
+                
+                return 'Root → ' + path.join(' → ');
+            }
+            
+            function saveNodeMetadata(jm) {
+                var selected = jm.get_selected_node();
+                if (!selected) return;
+                
+                var sequence = parseInt(document.getElementById('node-sequence').value) || 0;
+                var investedTime = parseFloat(document.getElementById('invested-time').value) || 0;
+                var elapsedTime = parseFloat(document.getElementById('elapsed-time').value) || 0;
+                
+                // Validate invested time vs elapsed time
+                if (investedTime > elapsedTime && elapsedTime > 0) {
+                    document.getElementById('validation-warning').style.display = 'block';
+                    return;
+                } else {
+                    document.getElementById('validation-warning').style.display = 'none';
+                }
+                
+                // Update node data
+                if (!selected.data) {
+                    selected.data = {};
+                }
+                selected.data.sequence = sequence;
+                selected.data.invested_time = investedTime;
+                selected.data.elapsed_time = elapsedTime;
+                
+                console.log('Saved metadata for node:', selected.topic, {
+                    sequence: sequence,
+                    invested_time: investedTime,
+                    elapsed_time: elapsedTime
+                });
+                
+                // Show success feedback (optional)
+                var saveBtn = document.getElementById('save-metadata');
+                var originalText = saveBtn.textContent;
+                saveBtn.textContent = 'Saved!';
+                saveBtn.style.background = '#28a745';
+                setTimeout(function() {
+                    saveBtn.textContent = originalText;
+                    saveBtn.style.background = '#007bff';
+                }, 1000);
+            }
+            
+            function resetMetadataForm(jm) {
+                var selected = jm.get_selected_node();
+                if (!selected) return;
+                
+                // Reset to original values
+                var data = selected.data || {};
+                document.getElementById('node-sequence').value = data.sequence || '';
+                document.getElementById('invested-time').value = data.invested_time || '';
+                document.getElementById('elapsed-time').value = data.elapsed_time || '';
+                
+                // Clear validation warning
+                document.getElementById('validation-warning').style.display = 'none';
+                
+                console.log('Reset metadata form for node:', selected.topic);
+            }
+            
+            function validateTimes() {
+                var investedTime = parseFloat(document.getElementById('invested-time').value) || 0;
+                var elapsedTime = parseFloat(document.getElementById('elapsed-time').value) || 0;
+                
+                var warning = document.getElementById('validation-warning');
+                if (investedTime > elapsedTime && elapsedTime > 0) {
+                    warning.style.display = 'block';
+                } else {
+                    warning.style.display = 'none';
+                }
+            }
+
             function initializeMindMap() {
                 // Simple mind map with just the main node
                 var mind = {
@@ -116,10 +424,14 @@
                 var jm = new jsMind(options);
                 jm.show(mind);
                 
+                // Initialize metadata handling
+                setupMetadataHandling(jm);
+                
                 // Select the root node initially so keyboard shortcuts work
                 setTimeout(function() {
                     jm.select_node('root');
                     console.log('Root node selected');
+                    updateMetadataSidebar(jm); // Update sidebar with root selection
                 }, 100);
                 
                 // Add FreeMind-like keyboard shortcuts
@@ -174,6 +486,7 @@
                                         elapsed_time: 0
                                     });
                                     jm.select_node(new_id);
+                                    updateMetadataSidebar(jm); // Update sidebar
                                     jm.begin_edit(new_id);
                                 } else {
                                     var parent = jm.get_node(selected_node.parent);
@@ -185,6 +498,7 @@
                                             elapsed_time: 0
                                         });
                                         jm.select_node(new_id);
+                                        updateMetadataSidebar(jm); // Update sidebar
                                         jm.begin_edit(new_id);
                                     }
                                 }
@@ -201,6 +515,7 @@
                                 elapsed_time: 0
                             });
                             jm.select_node(new_id);
+                            updateMetadataSidebar(jm); // Update sidebar
                             jm.begin_edit(new_id);
                             break;
                             
@@ -272,7 +587,13 @@
                                 if (parent_node) {
                                     setTimeout(function() {
                                         jm.select_node(parent_node.id);
+                                        updateMetadataSidebar(jm); // Update sidebar after deletion
                                         console.log('Selected parent node after deletion:', parent_node.topic);
+                                    }, 50);
+                                } else {
+                                    // If no parent, update sidebar to show no selection
+                                    setTimeout(function() {
+                                        updateMetadataSidebar(jm);
                                     }, 50);
                                 }
                             } else {
