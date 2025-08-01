@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>PEP Memory Map - Simple Test</title>
+        <link type="text/css" rel="stylesheet" href="jsmind/style/jsmind.css" />
+        <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            #jsmind_container { 
+                width: 800px; 
+                height: 500px; 
+                border: 2px solid #333; 
+                background: #f9f9f9; 
+                margin: 20px 0;
+            }
+            .status { 
+                padding: 10px; 
+                background: #e7f3ff; 
+                border-radius: 5px; 
+                margin: 10px 0;
+            }
+            .instructions {
+                background: #f0f8f0;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 10px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>PEP Memory Map - Test Version</h1>
+        
+        <div class="status" id="status">
+            Loading...
+        </div>
+        
+        <div class="instructions">
+            <h3>Test Steps:</h3>
+            <ol>
+                <li>You should see "Main Node" in the mind map below</li>
+                <li>Click on "Main Node" to select it (it should get highlighted)</li>
+                <li>Press <strong>Tab</strong> to create a child node</li>
+                <li>Press <strong>Enter</strong> to create a sibling node</li>
+                <li>Press <strong>F2</strong> to edit any node</li>
+                <li>When editing: <strong>Enter</strong> saves, <strong>Esc</strong> cancels</li>
+            </ol>
+        </div>
+        
+        <div id="jsmind_container"></div>
+        
+        <div class="status" id="debug">
+            Debug info will appear here...
+        </div>
+
+        <script src="jsmind/es6/jsmind.js"></script>
+        <script src="jsmind/es6/jsmind.draggable-node.js"></script>
+        <script>
+            function updateStatus(message) {
+                document.getElementById('status').innerHTML = message;
+                console.log('STATUS:', message);
+            }
+            
+            function updateDebug(message) {
+                var debug = document.getElementById('debug');
+                debug.innerHTML += '<br>' + message;
+                console.log('DEBUG:', message);
+            }
+            
+            try {
+                updateStatus('Initializing jsMind...');
+                
+                // Check if jsMind loaded
+                if (typeof jsMind === 'undefined') {
+                    throw new Error('jsMind library not loaded');
+                }
+                
+                var mind_data = {
+                    meta: { name: 'test', version: '1.0' },
+                    format: 'node_array',
+                    data: [
+                        { id: 'root', isroot: true, topic: 'Main Node' }
+                    ]
+                };
+                
+                var options = {
+                    container: 'jsmind_container',
+                    editable: true,
+                    theme: 'primary'
+                };
+                
+                var jm = new jsMind(options);
+                jm.show(mind_data);
+                
+                updateStatus('✅ Mind map loaded successfully!');
+                
+                // Auto-select root node
+                setTimeout(function() {
+                    jm.select_node('root');
+                    updateDebug('Root node selected');
+                }, 200);
+                
+                // Add keyboard handlers
+                document.addEventListener('keydown', function(e) {
+                    var selected = jm.get_selected_node();
+                    
+                    // Check if we're currently in editing mode
+                    var isEditing = jm.view.editing_node !== null;
+                    updateDebug('Key: ' + e.keyCode + ', Selected: ' + (selected ? selected.topic : 'none') + ', Editing: ' + isEditing);
+                    
+                    // If we're in editing mode, don't handle shortcuts (except F2 to exit edit)
+                    if (isEditing) {
+                        if (e.keyCode === 27) { // Escape - cancel edit
+                            e.preventDefault();
+                            jm.end_edit();
+                            updateDebug('Cancelled editing');
+                        }
+                        return; // Let the editing handle other keys naturally
+                    }
+                    
+                    if (!selected) {
+                        jm.select_node('root');
+                        selected = jm.get_selected_node();
+                    }
+                    
+                    if (!selected) return;
+                    
+                    switch(e.keyCode) {
+                        case 9: // Tab - child
+                            e.preventDefault();
+                            var id = 'node_' + Date.now();
+                            jm.add_node(selected.id, id, 'New Child');
+                            jm.select_node(id);
+                            updateDebug('Created child node: ' + id);
+                            break;
+                            
+                        case 13: // Enter - sibling (only when NOT editing)
+                            e.preventDefault();
+                            if (selected.id === 'root') {
+                                var id = 'node_' + Date.now();
+                                jm.add_node('root', id, 'New Branch');
+                                jm.select_node(id);
+                                updateDebug('Created branch from root: ' + id);
+                            } else {
+                                var parent = jm.get_node(selected.parent);
+                                if (parent) {
+                                    var id = 'node_' + Date.now();
+                                    jm.add_node(parent.id, id, 'New Sibling');
+                                    jm.select_node(id);
+                                    updateDebug('Created sibling node: ' + id);
+                                }
+                            }
+                            break;
+                            
+                        case 113: // F2 - edit
+                            e.preventDefault();
+                            jm.begin_edit(selected.id);
+                            updateDebug('Started editing: ' + selected.topic);
+                            break;
+                    }
+                });
+                
+                // Click handler
+                document.getElementById('jsmind_container').addEventListener('click', function() {
+                    setTimeout(function() {
+                        var selected = jm.get_selected_node();
+                        updateDebug('Clicked, selected: ' + (selected ? selected.topic : 'none'));
+                    }, 50);
+                });
+                
+                window.testMind = jm;
+                
+            } catch (error) {
+                updateStatus('❌ Error: ' + error.message);
+                console.error('Error initializing mind map:', error);
+            }
+        </script>
+    </body>
+</html>

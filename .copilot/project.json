@@ -1,0 +1,9 @@
+{
+  "context": [
+    "docs/🧭 Product Vision Statement.md",
+    "docs/Vision Board.md",
+    "docs/Pilot Scope Definition.md",
+    "docs/Pilot Features and User Stories.md"
+  ],
+  "instructions": "You are helping implement a visual planning tool called Memory Map Action Planner, based on the PEP coaching method. Refer to the context files above to understand the product vision, scope, and feature requirements. The UI is based on jsMind and runs as a client-side static site. Follow phased delivery (node management, metadata entry, export, persistence, deployment). Ensure features like task sequencing, invested/elapsed time, and CSV export are included."
+}

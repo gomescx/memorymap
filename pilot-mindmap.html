@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>PEP Memory Map - Pilot</title>
+        <link
+            type="text/css"
+            rel="stylesheet"
+            href="jsmind/style/jsmind.css"
+        />
+        <style type="text/css">
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background: #f8f9fa;
+            }
+            
+            .header {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            
+            .header h1 {
+                color: #333;
+                margin: 0 0 10px 0;
+            }
+            
+            .header p {
+                color: #666;
+                margin: 0;
+                font-size: 14px;
+            }
+            
+            #jsmind_container {
+                width: 100%;
+                height: 600px;
+                border: solid 2px #ddd;
+                background: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            
+            .shortcuts {
+                margin-top: 20px;
+                padding: 15px;
+                background: #e9ecef;
+                border-radius: 6px;
+                font-size: 13px;
+            }
+            
+            .shortcuts h3 {
+                margin-top: 0;
+                color: #495057;
+            }
+            
+            .shortcuts kbd {
+                background: #fff;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                padding: 2px 6px;
+                font-family: monospace;
+                font-size: 12px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="header">
+            <h1>PEP Memory Map - Pilot</h1>
+            <p>Clean mind mapping interface with FreeMind-like keyboard shortcuts</p>
+        </div>
+        
+        <div id="jsmind_container"></div>
+        
+        <div class="shortcuts">
+            <h3>Keyboard Shortcuts (FreeMind-like)</h3>
+            <p><kbd>Enter</kbd> - Create sibling node | <kbd>Tab</kbd> - Create child node | <kbd>F2</kbd> - Edit node | <kbd>Delete</kbd> - Delete node | <kbd>Esc</kbd> - Cancel editing</p>
+            <p style="margin-top: 10px;"><strong>Instructions:</strong> Click on the "Main Node" first to select it, then use the keyboard shortcuts.</p>
+            <p style="margin-top: 5px; font-size: 12px; color: #666;">Check the browser console (F12) for debug messages.</p>
+        </div>
+
+        <script src="jsmind/es6/jsmind.js"></script>
+        <script src="jsmind/es6/jsmind.draggable-node.js"></script>
+        <script type="text/javascript">
+            function initializeMindMap() {
+                // Simple mind map with just the main node
+                var mind = {
+                    meta: {
+                        name: 'PEP Memory Map',
+                        author: 'PEP Team',
+                        version: '1.0',
+                    },
+                    format: 'node_array',
+                    data: [
+                        { 
+                            id: 'root', 
+                            isroot: true, 
+                            topic: 'Main Node',
+                            // Extended data model for pilot
+                            sequence: 1,
+                            invested_time: 0,
+                            elapsed_time: 0
+                        }
+                    ],
+                };
+                
+                var options = {
+                    container: 'jsmind_container',
+                    editable: true,
+                    theme: 'primary'
+                };
+                
+                var jm = new jsMind(options);
+                jm.show(mind);
+                
+                // Select the root node initially so keyboard shortcuts work
+                setTimeout(function() {
+                    jm.select_node('root');
+                    console.log('Root node selected');
+                }, 100);
+                
+                // Add FreeMind-like keyboard shortcuts
+                setupFreeMindShortcuts(jm);
+                
+                // Store reference globally for testing
+                window.mindMap = jm;
+                
+                console.log('Mind map initialized with Main Node');
+                return jm;
+            }
+            
+            function setupFreeMindShortcuts(jm) {
+                document.addEventListener('keydown', function(e) {
+                    var selected_node = jm.get_selected_node();
+                    
+                    // Check if we're currently in editing mode
+                    var isEditing = jm.view.editing_node !== null;
+                    
+                    // Debug logging
+                    console.log('Key pressed:', e.keyCode, 'Selected node:', selected_node, 'Editing:', isEditing);
+                    
+                    // If we're in editing mode, don't handle shortcuts (except Escape)
+                    if (isEditing) {
+                        if (e.keyCode === 27) { // Escape - cancel edit
+                            e.preventDefault();
+                            jm.end_edit();
+                            console.log('Cancelled editing');
+                        }
+                        return; // Let the editing handle other keys naturally
+                    }
+                    
+                    if (!selected_node) {
+                        console.log('No node selected, selecting root');
+                        jm.select_node('root');
+                        selected_node = jm.get_selected_node();
+                        if (!selected_node) return;
+                    }
+                    
+                    switch(e.keyCode) {
+                        case 13: // Enter - Create sibling node (only when NOT editing)
+                            if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
+                                e.preventDefault();
+                                console.log('Creating sibling node');
+                                
+                                // If it's the root node, create a child instead
+                                if (selected_node.id === 'root') {
+                                    var new_id = 'node_' + Date.now();
+                                    jm.add_node('root', new_id, 'New Node', {
+                                        sequence: 0,
+                                        invested_time: 0,
+                                        elapsed_time: 0
+                                    });
+                                    jm.select_node(new_id);
+                                    jm.begin_edit(new_id);
+                                } else {
+                                    var parent = jm.get_node(selected_node.parent);
+                                    if (parent) {
+                                        var new_id = 'node_' + Date.now();
+                                        jm.add_node(parent.id, new_id, 'New Node', {
+                                            sequence: 0,
+                                            invested_time: 0,
+                                            elapsed_time: 0
+                                        });
+                                        jm.select_node(new_id);
+                                        jm.begin_edit(new_id);
+                                    }
+                                }
+                            }
+                            break;
+                            
+                        case 9: // Tab - Create child node
+                            e.preventDefault();
+                            console.log('Creating child node');
+                            var new_id = 'node_' + Date.now();
+                            jm.add_node(selected_node.id, new_id, 'New Child', {
+                                sequence: 0,
+                                invested_time: 0,
+                                elapsed_time: 0
+                            });
+                            jm.select_node(new_id);
+                            jm.begin_edit(new_id);
+                            break;
+                            
+                        case 113: // F2 - Edit node
+                            e.preventDefault();
+                            console.log('Editing node');
+                            jm.begin_edit(selected_node.id);
+                            break;
+                            
+                        case 46: // Delete - Delete node
+                            if (selected_node.id !== 'root') {
+                                e.preventDefault();
+                                console.log('Deleting node');
+                                jm.remove_node(selected_node.id);
+                            }
+                            break;
+                    }
+                });
+                
+                // Also handle clicks to ensure node selection works
+                document.getElementById('jsmind_container').addEventListener('click', function(e) {
+                    setTimeout(function() {
+                        var selected = jm.get_selected_node();
+                        console.log('Node clicked, selected:', selected);
+                    }, 10);
+                });
+            }
+
+            // Initialize when page loads
+            window.addEventListener('load', function() {
+                initializeMindMap();
+            });
+        </script>
+    </body>
+</html>
