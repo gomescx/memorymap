@@ -76,8 +76,9 @@
         
         <div class="shortcuts">
             <h3>Keyboard Shortcuts (FreeMind-like)</h3>
-            <p><kbd>Enter</kbd> - Create sibling node | <kbd>Tab</kbd> - Create child node | <kbd>F2</kbd> - Edit node | <kbd>Delete</kbd> - Delete node | <kbd>Esc</kbd> - Cancel editing</p>
+            <p><kbd>Enter</kbd> - Create sibling node | <kbd>Tab</kbd> - Create child node | <kbd>F2</kbd> - Edit node | <kbd>Delete</kbd> - Delete node and its children | <kbd>Esc</kbd> - Cancel editing</p>
             <p style="margin-top: 10px;"><strong>Instructions:</strong> Click on the "Main Node" first to select it, then use the keyboard shortcuts.</p>
+            <p style="margin-top: 5px; font-size: 12px; color: #666;"><strong>Note:</strong> Deleting a node will also delete all its child nodes, but never parent nodes.</p>
             <p style="margin-top: 5px; font-size: 12px; color: #666;">Check the browser console (F12) for debug messages.</p>
         </div>
 
@@ -212,8 +213,70 @@
                         case 46: // Delete - Delete node
                             if (selected_node.id !== 'root') {
                                 e.preventDefault();
-                                console.log('Deleting node');
-                                jm.remove_node(selected_node.id);
+                                console.log('=== DELETE OPERATION START ===');
+                                console.log('Selected node:', selected_node.topic, 'ID:', selected_node.id);
+                                
+                                // Get complete structure before deletion (matching delete-bug-test.html)
+                                var beforeData = jm.get_data();
+                                var beforeNodeCount = beforeData.data.length;
+                                
+                                console.log('Parent:', selected_node.parent ? jm.get_node(selected_node.parent).topic : 'none');
+                                console.log('Children count:', selected_node.children ? selected_node.children.length : 0);
+                                console.log('Total nodes before:', beforeNodeCount);
+                                
+                                // List all nodes before (for debugging)
+                                console.log('Nodes before delete:');
+                                beforeData.data.forEach(function(node) {
+                                    console.log('  - ' + node.topic + ' (id: ' + node.id + ', parent: ' + (node.parentid || 'root') + ')');
+                                });
+                                
+                                // Perform the delete operation (using ID like in working test)
+                                var deleteResult = jm.remove_node(selected_node.id);
+                                
+                                // Get structure after deletion
+                                var afterData = jm.get_data();
+                                var afterNodeCount = afterData.data.length;
+                                
+                                console.log('=== DELETE OPERATION RESULT ===');
+                                console.log('Delete operation result:', deleteResult);
+                                console.log('Total nodes after:', afterNodeCount);
+                                console.log('Nodes removed:', (beforeNodeCount - afterNodeCount));
+                                
+                                // List all nodes after
+                                console.log('Nodes after delete:');
+                                afterData.data.forEach(function(node) {
+                                    console.log('  - ' + node.topic + ' (id: ' + node.id + ', parent: ' + (node.parentid || 'root') + ')');
+                                });
+                                
+                                // Check if any parent nodes were accidentally removed
+                                var removedNodes = [];
+                                beforeData.data.forEach(function(beforeNode) {
+                                    var stillExists = afterData.data.find(function(afterNode) {
+                                        return afterNode.id === beforeNode.id;
+                                    });
+                                    if (!stillExists) {
+                                        removedNodes.push(beforeNode.topic + ' (id: ' + beforeNode.id + ')');
+                                    }
+                                });
+                                
+                                console.log('Nodes that were removed:', removedNodes.join(', '));
+                                
+                                if (removedNodes.length > 1 || (removedNodes.length === 1 && !removedNodes[0].includes(selected_node.id))) {
+                                    console.warn('⚠️  WARNING: More nodes removed than expected!');
+                                } else {
+                                    console.log('✅ Delete operation appears normal');
+                                }
+                                
+                                // Select parent node after deletion
+                                var parent_node = jm.get_node(selected_node.parent);
+                                if (parent_node) {
+                                    setTimeout(function() {
+                                        jm.select_node(parent_node.id);
+                                        console.log('Selected parent node after deletion:', parent_node.topic);
+                                    }, 50);
+                                }
+                            } else {
+                                console.log('Cannot delete root node');
                             }
                             break;
                     }
