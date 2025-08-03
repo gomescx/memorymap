@@ -30,6 +30,7 @@
 
 ---
 
+
 ### 🔧 Feature 3: Action Plan Export[](https://dev.azure.com/Claudio-Coaching/PEP%20Memory%20Map%20\(basic%20DevOps%20process\)/_wiki/wikis/PEP-Memory-Map.wiki/6/Pilot-Features-and-User-Stories?anchor=%F0%9F%94%A7-feature-3%3A-action-plan-export)
 
 > As a coach, I want to export my action plan into a readable document so the client coachee can track execution outside the app.
@@ -62,3 +63,68 @@
 
 - **5.1** Host on GitHub Pages for easy access.
 - **5.2** Document how to run locally (open `index.html`).
+
+
+---
+
+### 🔧 **Feature 6: Smart Sequencing **
+
+> **As a user**, I want automatic task sequencing, so that I can reduce manual input and maintain clarity in my mind map-based action plan.
+
+---
+
+#### **User Stories**
+
+1. **Automatic Task Sequence Numbering**
+
+   * The system automatically assigns and updates `sequence` numbers for all nodes using a **clockwise hierarchical convention** starting from the top-right (1 o'clock) position.
+   * Sequence numbers follow a dot-separated format reflecting hierarchy (e.g., `1`, `1.2`, `1.2.1`).
+   * When a node is **repositioned visually**, its sequence number and its children’s sequence numbers are recalculated accordingly.
+
+2. **Toggle Display of Metadata**
+
+   * A **checkbox in the UI** allows users to toggle visibility of metadata fields (sequence, invested time, elapsed time).
+   * When enabled, each node displays:
+
+     ```
+     | Task Title         |
+     | # 1.2  I: 2h  E: 3d |
+     ```
+
+### 🔧 **Feature 7: Time Display Enhancements**
+
+#### **User Stories**
+
+1. **Smart Time Formatting**
+
+   * When entering time values, the system normalizes and converts units:
+
+     * 1 day = 8 hours
+     * 1 month = 22 working days
+     * 75 minutes → `1:15h`
+     * 12 hours → `1.5d`
+   * The system always chooses the **most human-readable unit**, with fractions rounded to one decimal place where needed.
+
+2. **Flexible Input Units**
+
+   * Users can input time using flexible units:
+
+     * Minutes: `m`, `min`
+     * Hours: `h`, `hr`
+     * Days: `d`, `day`
+   * Examples:
+
+     * `0.5d` → displayed as `4h`
+     * `90min` → displayed as `1:30h`
+     * `2hr` → remains `2h`
+
+---
+
+#### 💡 Dev Notes (for Copilot context)
+
+* Time should be stored in a **single base unit internally (e.g., minutes or hours)** and formatted for display.
+* Sequence ordering may require tracking the visual position of sibling nodes (e.g., `x/y` coordinates relative to parent).
+* jsMind node rendering should be updated when toggling metadata display.
+
+---
+

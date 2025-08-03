@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sequence Test - Debugging</title>
+    <script src="jsmind/es6/jsmind.js"></script>
+    <link rel="stylesheet" type="text/css" href="jsmind/style/jsmind.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #controls { margin-bottom: 20px; }
+        button { margin: 5px; padding: 8px 12px; }
+        #debug-output { 
+            background: #f5f5f5; 
+            padding: 10px; 
+            margin-top: 20px; 
+            border: 1px solid #ddd;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .comparison { display: flex; gap: 20px; }
+        .test-section { flex: 1; }
+        .test-section h3 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Sequence Generation Debugging</h1>
+    
+    <div class="comparison">
+        <div class="test-section">
+            <h3>Simple Sequential Method</h3>
+            <div id="controls-simple">
+                <button onclick="testSimpleSequencing()">Test Simple Sequencing</button>
+                <button onclick="addNodeSimple()">Add Node (Simple)</button>
+            </div>
+            <div id="simple-container" style="width: 100%; height: 300px; border: 1px solid #ccc;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Complex Angular Method</h3>
+            <div id="controls-complex">
+                <button onclick="testComplexSequencing()">Test Complex Sequencing</button>
+                <button onclick="addNodeComplex()">Add Node (Complex)</button>
+            </div>
+            <div id="complex-container" style="width: 100%; height: 300px; border: 1px solid #ccc;"></div>
+        </div>
+    </div>
+    
+    <div id="debug-output"></div>
+
+    <script>
+        var jmSimple, jmComplex;
+        var debugOutput = document.getElementById('debug-output');
+
+        function log(message) {
+            console.log(message);
+            debugOutput.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+        }
+
+        // Initialize both mind maps
+        function initMindMaps() {
+            var mind = {
+                meta: { name: 'Test', author: 'Test', version: '1.0' },
+                format: 'node_array',
+                data: [
+                    { id: 'root', isroot: true, topic: 'Root Node' },
+                    { id: 'child1', parentid: 'root', topic: 'Child 1' },
+                    { id: 'child2', parentid: 'root', topic: 'Child 2' },
+                    { id: 'child3', parentid: 'root', topic: 'Child 3' },
+                    { id: 'grandchild1_1', parentid: 'child1', topic: 'Grandchild 1.1' },
+                    { id: 'grandchild1_2', parentid: 'child1', topic: 'Grandchild 1.2' }
+                ]
+            };
+
+            // Simple version
+            var optionsSimple = {
+                container: 'simple-container',
+                theme: 'primary',
+                editable: true
+            };
+            jmSimple = new jsMind(optionsSimple);
+            jmSimple.show(JSON.parse(JSON.stringify(mind))); // Deep copy
+
+            // Complex version
+            var optionsComplex = {
+                container: 'complex-container',
+                theme: 'primary',
+                editable: true
+            };
+            jmComplex = new jsMind(optionsComplex);
+            jmComplex.show(JSON.parse(JSON.stringify(mind))); // Deep copy
+        }
+
+        // SIMPLE SEQUENCING (just follows the children array order)
+        function simpleUpdateAllSequences(jm) {
+            log('SIMPLE: Starting sequence update');
+            var rootNode = jm.get_node('root');
+            if (!rootNode) return;
+
+            setNodeSequence(rootNode, '');
+            if (rootNode.children && rootNode.children.length > 0) {
+                simpleUpdateChildrenSequences(jm, rootNode, '');
+            }
+        }
+
+        function simpleUpdateChildrenSequences(jm, parentNode, parentSequence) {
+            if (!parentNode.children || parentNode.children.length === 0) return;
+
+            for (var i = 0; i < parentNode.children.length; i++) {
+                var childId = parentNode.children[i];
+                var childNode = jm.get_node(childId);
+                
+                if (childNode) {
+                    var sequenceNumber = parentSequence === '' ? 
+                        (i + 1).toString() : 
+                        parentSequence + '.' + (i + 1).toString();
+                    
+                    setNodeSequence(childNode, sequenceNumber);
+                    log('SIMPLE: Set "' + childNode.topic + '" -> "' + sequenceNumber + '"');
+                    
+                    simpleUpdateChildrenSequences(jm, childNode, sequenceNumber);
+                }
+            }
+        }
+
+        // COMPLEX SEQUENCING (angular positioning - from pilot-mindmap.html)
+        function complexUpdateAllSequences(jm) {
+            log('COMPLEX: Starting sequence update');
+            var rootNode = jm.get_node('root');
+            if (!rootNode) return;
+
+            setNodeSequence(rootNode, '');
+            if (rootNode.children && rootNode.children.length > 0) {
+                complexUpdateChildrenSequences(jm, rootNode, '');
+            }
+        }
+
+        function complexUpdateChildrenSequences(jm, parentNode, parentSequence) {
+            if (!parentNode.children || parentNode.children.length === 0) return;
+
+            // Get all child nodes with their positions
+            var childrenWithPositions = [];
+            for (var i = 0; i < parentNode.children.length; i++) {
+                var childId = parentNode.children[i];
+                var childNode = jm.get_node(childId);
+                if (childNode) {
+                    var position = getNodePosition(jm, childNode);
+                    childrenWithPositions.push({
+                        node: childNode,
+                        position: position,
+                        angle: position.angle
+                    });
+                    log('COMPLEX: Node "' + childNode.topic + '" at angle ' + position.angle.toFixed(1) + '°');
+                }
+            }
+
+            // Sort children by angle
+            childrenWithPositions.sort(function(a, b) {
+                var angleA = normalizeAngleFrom1OClock(a.angle);
+                var angleB = normalizeAngleFrom1OClock(b.angle);
+                return angleA - angleB;
+            });
+
+            // Assign sequence numbers
+            for (var i = 0; i < childrenWithPositions.length; i++) {
+                var childData = childrenWithPositions[i];
+                var childNode = childData.node;
+                
+                var sequenceNumber = parentSequence === '' ? 
+                    (i + 1).toString() : 
+                    parentSequence + '.' + (i + 1).toString();
+                
+                setNodeSequence(childNode, sequenceNumber);
+                log('COMPLEX: Set "' + childNode.topic + '" -> "' + sequenceNumber + '" (angle: ' + childData.angle.toFixed(1) + '°)');
+                
+                complexUpdateChildrenSequences(jm, childNode, sequenceNumber);
+            }
+        }
+
+        function getNodePosition(jm, node) {
+            var view = jm.view;
+            var nodeElement = view.get_element(node.id);
+            
+            if (!nodeElement) {
+                log('COMPLEX: No element found for node ' + node.id);
+                return { x: 0, y: 0, angle: 0 };
+            }
+
+            try {
+                var nodeRect = nodeElement.getBoundingClientRect();
+                var nodeCenterX = nodeRect.left + nodeRect.width / 2;
+                var nodeCenterY = nodeRect.top + nodeRect.height / 2;
+
+                // Get parent position
+                var parentNode = node.parent ? jm.get_node(node.parent) : null;
+                var parentCenterX, parentCenterY;
+
+                if (parentNode) {
+                    var parentElement = view.get_element(parentNode.id);
+                    if (parentElement) {
+                        var parentRect = parentElement.getBoundingClientRect();
+                        parentCenterX = parentRect.left + parentRect.width / 2;
+                        parentCenterY = parentRect.top + parentRect.height / 2;
+                    } else {
+                        log('COMPLEX: No parent element found');
+                        return { x: 0, y: 0, angle: 0 };
+                    }
+                } else {
+                    var container = nodeElement.closest('[id$="container"]');
+                    if (container) {
+                        var containerRect = container.getBoundingClientRect();
+                        parentCenterX = containerRect.left + containerRect.width / 2;
+                        parentCenterY = containerRect.top + containerRect.height / 2;
+                    } else {
+                        log('COMPLEX: No container found');
+                        return { x: 0, y: 0, angle: 0 };
+                    }
+                }
+
+                var deltaX = nodeCenterX - parentCenterX;
+                var deltaY = nodeCenterY - parentCenterY;
+
+                var angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+                if (angle < 0) angle += 360;
+
+                return { x: deltaX, y: deltaY, angle: angle };
+            } catch (e) {
+                log('COMPLEX: Error getting position: ' + e.message);
+                return { x: 0, y: 0, angle: 0 };
+            }
+        }
+
+        function normalizeAngleFrom1OClock(angle) {
+            var normalized = angle - 30;
+            if (normalized < 0) normalized += 360;
+            return normalized;
+        }
+
+        function setNodeSequence(node, sequence) {
+            if (!node.data) node.data = {};
+            node.data.sequence = sequence;
+        }
+
+        function checkSequences(jm, label) {
+            log(label + ': Checking all sequences');
+            var allData = jm.get_data();
+            if (allData && allData.data) {
+                for (var i = 0; i < allData.data.length; i++) {
+                    var nodeData = allData.data[i];
+                    var node = jm.get_node(nodeData.id);
+                    if (node) {
+                        var sequence = (node.data && node.data.sequence !== undefined) ? 
+                            node.data.sequence : 'UNDEFINED';
+                        log(label + ': "' + node.topic + '" -> "' + sequence + '"');
+                    }
+                }
+            }
+        }
+
+        function testSimpleSequencing() {
+            log('=== TESTING SIMPLE SEQUENCING ===');
+            simpleUpdateAllSequences(jmSimple);
+            checkSequences(jmSimple, 'SIMPLE');
+        }
+
+        function testComplexSequencing() {
+            log('=== TESTING COMPLEX SEQUENCING ===');
+            setTimeout(function() { // Wait for layout
+                complexUpdateAllSequences(jmComplex);
+                checkSequences(jmComplex, 'COMPLEX');
+            }, 100);
+        }
+
+        function addNodeSimple() {
+            var newId = 'simple_' + Date.now();
+            jmSimple.add_node('root', newId, 'New Simple');
+            setTimeout(() => testSimpleSequencing(), 100);
+        }
+
+        function addNodeComplex() {
+            var newId = 'complex_' + Date.now();
+            jmComplex.add_node('root', newId, 'New Complex');
+            setTimeout(() => testComplexSequencing(), 200);
+        }
+
+        window.onload = function() {
+            initMindMaps();
+            setTimeout(function() {
+                log('Page loaded, running tests...');
+                testSimpleSequencing();
+                setTimeout(() => testComplexSequencing(), 500);
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

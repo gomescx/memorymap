@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fixed Sequence System</title>
+    <script src="jsmind/es6/jsmind.js"></script>
+    <link rel="stylesheet" type="text/css" href="jsmind/style/jsmind.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #jsmind_container { width: 100%; height: 400px; border: 1px solid #ccc; margin: 20px 0; }
+        button { margin: 5px; padding: 8px 12px; }
+        .sequence-number { 
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-right: 5px;
+            min-width: 16px;
+            text-align: center;
+        }
+        .metadata { font-size: 10px; color: #666; border-top: 1px solid #ccc; padding-top: 2px; }
+        #debug { background: #f5f5f5; padding: 10px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>Fixed Sequence Number System</h1>
+    
+    <div>
+        <button onclick="updateSequences()">Update Sequences</button>
+        <button onclick="addRandomNode()">Add Random Node</button>
+        <button onclick="toggleSequenceDisplay()">Toggle Sequence Numbers</button>
+        <button onclick="toggleMetadata()">Toggle Full Metadata</button>
+        <button onclick="debugNodes()">Debug All Nodes</button>
+        <button onclick="clearDebug()">Clear Debug</button>
+        <label><input type="checkbox" id="show-sequences" onchange="toggleSequenceDisplay()"> Show Sequence Numbers</label>
+    </div>
+
+    <div id="jsmind_container"></div>
+    <div id="debug"></div>
+
+    <script>
+        var jm;
+        var showMetadata = false;
+        var showSequences = false;
+        var debug = document.getElementById('debug');
+
+        function log(message) {
+            console.log(message);
+            debug.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            debug.scrollTop = debug.scrollHeight;
+        }
+
+        function clearDebug() {
+            debug.textContent = '';
+        }
+
+        // Initialize mind map
+        var mind = {
+            meta: { name: 'Fixed Sequence Test', author: 'Test', version: '1.0' },
+            format: 'node_array',
+            data: [
+                { id: 'root', isroot: true, topic: 'Root Node' },
+                { id: 'child1', parentid: 'root', topic: 'Task Planning' },
+                { id: 'child2', parentid: 'root', topic: 'Development' },
+                { id: 'child3', parentid: 'root', topic: 'Testing' },
+                { id: 'child4', parentid: 'root', topic: 'Deployment' },
+                { id: 'grandchild1_1', parentid: 'child1', topic: 'Requirements' },
+                { id: 'grandchild1_2', parentid: 'child1', topic: 'Architecture' },
+                { id: 'grandchild2_1', parentid: 'child2', topic: 'Frontend' },
+                { id: 'grandchild2_2', parentid: 'child2', topic: 'Backend' },
+                { id: 'greatgrand1_1_1', parentid: 'grandchild1_1', topic: 'User Stories' }
+            ]
+        };
+
+        var options = {
+            container: 'jsmind_container',
+            theme: 'primary',
+            editable: true
+        };
+
+        jm = new jsMind(options);
+        jm.show(mind);
+
+        // ===== FIXED SEQUENCE SYSTEM =====
+
+        /**
+         * Initialize node data structure safely
+         */
+        function initNodeData(node) {
+            if (!node.data) {
+                node.data = {};
+            }
+            if (typeof node.data.sequence === 'undefined') {
+                node.data.sequence = '';
+            }
+            return node.data;
+        }
+
+        /**
+         * Set sequence number with proper error handling
+         */
+        function setNodeSequence(node, sequence) {
+            try {
+                var data = initNodeData(node);
+                data.sequence = sequence;
+                log('✓ Set sequence "' + sequence + '" for "' + node.topic + '"');
+                return true;
+            } catch (e) {
+                log('✗ Failed to set sequence for node: ' + e.message);
+                return false;
+            }
+        }
+
+        /**
+         * Robust sequence update system
+         * Uses simple child array order (reliable) instead of complex positioning
+         */
+        function updateAllSequenceNumbers() {
+            log('=== STARTING ROBUST SEQUENCE UPDATE ===');
+            
+            try {
+                var rootNode = jm.get_node('root');
+                if (!rootNode) {
+                    log('✗ Root node not found');
+                    return false;
+                }
+
+                // Initialize root
+                setNodeSequence(rootNode, '');
+                
+                // Process all children recursively
+                if (rootNode.children && rootNode.children.length > 0) {
+                    updateChildrenSequences(rootNode, '');
+                }
+                
+                log('✓ Sequence update completed successfully');
+                return true;
+                
+            } catch (e) {
+                log('✗ Error in sequence update: ' + e.message);
+                return false;
+            }
+        }
+
+        /**
+         * Recursively update children sequences
+         * Simple and reliable - just uses array order
+         */
+        function updateChildrenSequences(parentNode, parentSequence) {
+            if (!parentNode.children || parentNode.children.length === 0) {
+                return;
+            }
+
+            log('Processing ' + parentNode.children.length + ' children of "' + parentNode.topic + '"');
+            
+            for (var i = 0; i < parentNode.children.length; i++) {
+                var childId = parentNode.children[i];
+                var childNode = jm.get_node(childId);
+                
+                if (childNode) {
+                    // Calculate sequence: 1, 2, 3... or 1.1, 1.2, 2.1, 2.2...
+                    var sequenceNumber = parentSequence === '' ? 
+                        (i + 1).toString() : 
+                        parentSequence + '.' + (i + 1).toString();
+                    
+                    setNodeSequence(childNode, sequenceNumber);
+                    
+                    // Recursively process grandchildren
+                    updateChildrenSequences(childNode, sequenceNumber);
+                } else {
+                    log('✗ Child node not found: ' + childId);
+                }
+            }
+        }
+
+        /**
+         * Toggle sequence number display on nodes
+         */
+        function toggleSequenceDisplay() {
+            var checkbox = document.getElementById('show-sequences');
+            showSequences = checkbox ? checkbox.checked : !showSequences;
+            
+            log((showSequences ? 'Showing' : 'Hiding') + ' sequence numbers on nodes');
+            
+            var allNodeElements = document.querySelectorAll('jmnode[nodeid]');
+            
+            for (var i = 0; i < allNodeElements.length; i++) {
+                var nodeElement = allNodeElements[i];
+                var nodeId = nodeElement.getAttribute('nodeid');
+                var node = jm.get_node(nodeId);
+                
+                // Remove existing sequence display
+                var existingSequence = nodeElement.querySelector('.sequence-number');
+                if (existingSequence) {
+                    existingSequence.remove();
+                }
+                
+                if (showSequences && node) {
+                    try {
+                        var data = initNodeData(node);
+                        var sequence = data.sequence || '';
+                        
+                        if (sequence !== '') {  // Don't show sequence for root (empty sequence)
+                            var sequenceSpan = document.createElement('span');
+                            sequenceSpan.className = 'sequence-number';
+                            sequenceSpan.textContent = sequence;
+                            
+                            // Insert at the beginning of the node
+                            nodeElement.insertBefore(sequenceSpan, nodeElement.firstChild);
+                        }
+                    } catch (e) {
+                        log('✗ Error adding sequence number to ' + nodeId + ': ' + e.message);
+                    }
+                }
+            }
+            
+            // Update checkbox state if called programmatically
+            if (checkbox) {
+                checkbox.checked = showSequences;
+            }
+        }
+
+        /**
+         * Enhanced metadata display with error handling
+         */
+        function toggleMetadata() {
+            showMetadata = !showMetadata;
+            log((showMetadata ? 'Showing' : 'Hiding') + ' metadata display');
+            
+            var allNodeElements = document.querySelectorAll('jmnode[nodeid]');
+            
+            for (var i = 0; i < allNodeElements.length; i++) {
+                var nodeElement = allNodeElements[i];
+                var nodeId = nodeElement.getAttribute('nodeid');
+                var node = jm.get_node(nodeId);
+                
+                // Remove existing metadata
+                var existingMetadata = nodeElement.querySelector('.metadata');
+                if (existingMetadata) {
+                    existingMetadata.remove();
+                }
+                
+                if (showMetadata && node) {
+                    try {
+                        var data = initNodeData(node);
+                        var sequence = data.sequence || 'NO_SEQ';
+                        
+                        var metadataDiv = document.createElement('div');
+                        metadataDiv.className = 'metadata';
+                        metadataDiv.textContent = '# ' + sequence;
+                        nodeElement.appendChild(metadataDiv);
+                    } catch (e) {
+                        log('✗ Error adding metadata to ' + nodeId + ': ' + e.message);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Add event listeners for automatic sequence updates
+         */
+        function setupSequenceEvents() {
+            // Update sequences when nodes are added
+            jm.add_event_listener('add_node', function(data) {
+                log('Node added: ' + data.nodeid);
+                setTimeout(function() {
+                    updateAllSequenceNumbers();
+                    if (showSequences) {
+                        toggleSequenceDisplay();
+                    }
+                    if (showMetadata) {
+                        toggleMetadata(); // Refresh metadata display
+                        toggleMetadata();
+                    }
+                }, 100);
+            });
+
+            // Update sequences when nodes are removed
+            jm.add_event_listener('remove_node', function(data) {
+                log('Node removed: ' + data.nodeid);
+                setTimeout(function() {
+                    updateAllSequenceNumbers();
+                    if (showSequences) {
+                        toggleSequenceDisplay();
+                    }
+                    if (showMetadata) {
+                        toggleMetadata(); // Refresh metadata display
+                        toggleMetadata();
+                    }
+                }, 100);
+            });
+
+            log('✓ Event listeners set up');
+        }
+
+        /**
+         * Debug function to show all node information
+         */
+        function debugNodes() {
+            log('=== DEBUGGING ALL NODES ===');
+            var allData = jm.get_data();
+            
+            if (allData && allData.data) {
+                for (var i = 0; i < allData.data.length; i++) {
+                    var nodeData = allData.data[i];
+                    var node = jm.get_node(nodeData.id);
+                    
+                    if (node) {
+                        var data = initNodeData(node);
+                        log('Node "' + node.topic + '" (ID: ' + node.id + ')');
+                        log('  Sequence: "' + (data.sequence || 'UNDEFINED') + '"');
+                        log('  Parent: ' + (node.parent || 'none'));
+                        log('  Children: ' + (node.children ? node.children.join(', ') : 'none'));
+                        log('  Data: ' + JSON.stringify(data));
+                    }
+                }
+            }
+            log('=== DEBUG COMPLETE ===');
+        }
+
+        /**
+         * Add a random node for testing
+         */
+        function addRandomNode() {
+            var allNodes = ['root', 'child1', 'child2', 'child3', 'grandchild1_1', 'grandchild1_2'];
+            var randomParent = allNodes[Math.floor(Math.random() * allNodes.length)];
+            var newId = 'node_' + Date.now();
+            var newTopic = 'New Task ' + Date.now();
+            
+            log('Adding "' + newTopic + '" to parent "' + randomParent + '"');
+            jm.add_node(randomParent, newId, newTopic);
+        }
+
+        // Wrapper functions for buttons
+        function updateSequences() {
+            updateAllSequenceNumbers();
+        }
+
+        // Initialize everything
+        setTimeout(function() {
+            log('Initializing sequence system...');
+            setupSequenceEvents();
+            updateAllSequenceNumbers();
+            log('✓ System ready');
+        }, 500);
+    </script>
+</body>
+</html>
