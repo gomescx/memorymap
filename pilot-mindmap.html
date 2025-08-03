@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>PEP Memory Map - Pilot</title>
         <link
             type="text/css"
@@ -10,11 +11,17 @@
             href="jsmind/style/jsmind.css"
         />
         <style type="text/css">
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            
             body {
                 font-family: Arial, sans-serif;
-                margin: 0;
                 padding: 20px;
                 background: #f8f9fa;
+                box-sizing: border-box;
             }
             
             .header {
@@ -35,7 +42,9 @@
             
             #jsmind_container {
                 width: 100%;
-                height: 600px;
+                height: calc(100vh - 320px); /* Responsive height: full viewport minus header and controls */
+                min-height: 400px; /* Minimum height for usability */
+                max-height: 800px; /* Maximum height to prevent too tall on large screens */
                 border: solid 2px #ddd;
                 background: #ffffff;
                 border-radius: 8px;
@@ -171,27 +180,6 @@
                 padding: 20px;
             }
             
-            /* Mindmap controls styling */
-            .mindmap-controls {
-                margin-bottom: 15px;
-                text-align: center;
-            }
-            
-            .mindmap-controls button {
-                margin: 5px;
-                padding: 8px 16px;
-                background: #007bff;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 14px;
-            }
-            
-            .mindmap-controls button:hover {
-                background: #0056b3;
-            }
-            
             /* Sequence number badge styling */
             .sequence-number { 
                 display: inline-block;
@@ -302,6 +290,252 @@
             .main-content.sidebar-pinned {
                 margin-left: 320px;
             }
+
+            /* New Control Panel Styles */
+            .controls-panel {
+                background: #f8f9fa;
+                border-top: 2px solid #dee2e6;
+                padding: 20px;
+                margin-top: 20px;
+                border-radius: 8px;
+            }
+
+            .primary-actions {
+                display: flex;
+                gap: 30px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+
+            .action-group {
+                flex: 1;
+                min-width: 300px;
+            }
+
+            .action-group h3 {
+                margin: 0 0 15px 0;
+                color: #495057;
+                font-size: 16px;
+                font-weight: 600;
+                border-bottom: 2px solid #e9ecef;
+                padding-bottom: 8px;
+            }
+
+            .action-group .btn {
+                margin: 0 10px 10px 0;
+                padding: 10px 16px;
+                border: none;
+                border-radius: 6px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s;
+                font-size: 14px;
+            }
+
+            .btn-primary {
+                background: #007bff;
+                color: white;
+            }
+
+            .btn-primary:hover {
+                background: #0056b3;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+            }
+
+            .btn-export {
+                background: #fd7e14;
+                color: white;
+            }
+
+            .btn-export:hover {
+                background: #e55b00;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(253,126,20,0.2);
+            }
+
+            .btn-success {
+                background: #28a745;
+                color: white;
+            }
+
+            .btn-success:hover {
+                background: #1e7e34;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(40,167,69,0.2);
+            }
+
+            .btn-info {
+                background: #17a2b8;
+                color: white;
+            }
+
+            .btn-info:hover {
+                background: #117a8b;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(23,162,184,0.2);
+            }
+
+            .btn-sample {
+                background: #6f42c1;
+                color: white;
+            }
+
+            .btn-sample:hover {
+                background: #5a2d91;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(111,66,193,0.2);
+            }
+
+            /* Settings Panel */
+            .settings-panel, .help-panel {
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                margin-bottom: 15px;
+                background: white;
+                overflow: hidden;
+            }
+
+            .settings-toggle, .help-toggle {
+                width: 100%;
+                padding: 12px 16px;
+                background: #e9ecef;
+                border: none;
+                cursor: pointer;
+                font-weight: 500;
+                text-align: left;
+                transition: background 0.2s;
+                font-size: 14px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .settings-toggle:hover, .help-toggle:hover {
+                background: #dee2e6;
+            }
+
+            .settings-content, .help-content {
+                padding: 20px;
+                border-top: 1px solid #dee2e6;
+            }
+
+            .settings-row {
+                display: flex;
+                gap: 40px;
+                flex-wrap: wrap;
+            }
+
+            .setting-group {
+                flex: 1;
+                min-width: 250px;
+            }
+
+            .setting-group h4 {
+                margin: 0 0 15px 0;
+                color: #495057;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            .checkbox-label {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+                cursor: pointer;
+                font-size: 14px;
+                color: #495057;
+            }
+
+            .checkbox-label input {
+                margin-right: 10px;
+                cursor: pointer;
+            }
+
+            .help-text {
+                font-size: 12px;
+                color: #6c757d;
+                margin: 5px 0 0 0;
+                font-style: italic;
+            }
+
+            /* Keyboard shortcuts grid */
+            .shortcut-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 10px;
+            }
+
+            .shortcut-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px;
+                background: #f8f9fa;
+                border-radius: 4px;
+            }
+
+            .shortcut-item kbd {
+                background: #e9ecef;
+                padding: 4px 8px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+                min-width: 50px;
+                text-align: center;
+                border: 1px solid #ced4da;
+            }
+
+            .shortcut-item span {
+                font-size: 13px;
+                color: #495057;
+            }
+
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .primary-actions {
+                    flex-direction: column;
+                    gap: 20px;
+                }
+                
+                .settings-row {
+                    flex-direction: column;
+                    gap: 20px;
+                }
+                
+                .shortcut-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                .action-group {
+                    min-width: auto;
+                }
+                
+                /* Adjust mind map height for mobile */
+                #jsmind_container {
+                    height: calc(100vh - 400px); /* More space for mobile controls */
+                    min-height: 300px;
+                    max-height: 500px;
+                }
+            }
+            
+            /* Additional responsive height adjustments */
+            @media (max-height: 600px) {
+                /* For very short screens (landscape mobile/tablets) */
+                #jsmind_container {
+                    height: calc(100vh - 250px);
+                    min-height: 200px;
+                    max-height: 350px;
+                }
+            }
+            
+            @media (min-height: 900px) {
+                /* For tall screens, allow more height */
+                #jsmind_container {
+                    height: calc(100vh - 300px);
+                    max-height: 1000px;
+                }
+            }
         </style>
     </head>
 
@@ -385,51 +619,102 @@
                 <div class="mindmap-section">
                     <div id="jsmind_container"></div>
                     
-                    <!-- Mindmap Control Buttons moved below -->
-                    <div class="mindmap-controls">
-                        <button onclick="updateSequences()">Update Sequences</button>
-                        <label style="margin: 5px 15px; display: inline-flex; align-items: center; cursor: pointer; font-size: 14px; color: #333;">
-                            <input type="checkbox" id="show-sequences" style="margin-right: 8px; cursor: pointer;" onchange="toggleSequenceDisplay()">
-                            Show Sequence Numbers
-                        </label>
-                        <label style="margin: 5px 15px; display: inline-flex; align-items: center; cursor: pointer; font-size: 14px; color: #333;">
-                            <input type="checkbox" id="show-dates-times" style="margin-right: 8px; cursor: pointer;" onchange="toggleFullMetadata()">
-                            Show Dates and Times
-                        </label>
-                    </div>
-                    
-                    <!-- Export and Data Persistence Controls -->
-                    <div class="mindmap-controls" style="border-top: 1px solid #ddd; padding-top: 15px; margin-top: 15px;">
-                        <h4 style="margin: 0 0 10px 0; color: #333; font-size: 16px;">📊 Export & Data Management</h4>
-                        
-                        <!-- Export Options -->
-                        <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px; border: 1px solid #dee2e6;">
-                            <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal; margin: 0 0 8px 0; font-size: 14px;">
-                                <input type="checkbox" id="export-leaves-only" style="margin-right: 8px; cursor: pointer;">
-                                <span>Export only leaf nodes (end tasks)</span>
-                            </label>
-                            <div style="font-size: 12px; color: #666; margin-left: 20px;">
-                                Export only the final tasks at the end of each branch (no parent tasks)
+                    <!-- New Improved Controls Panel -->
+                    <div class="controls-panel">
+                        <!-- Primary Actions Bar -->
+                        <div class="primary-actions">
+                            <div class="action-group">
+                                <h3>🎯 Mind Map Actions</h3>
+                                <button onclick="updateSequences()" class="btn btn-primary">
+                                    🔄 Update Sequences
+                                </button>
+                                <button onclick="exportActionPlan()" class="btn btn-export">
+                                    📈 Export Action Plan
+                                </button>
+                            </div>
+                            
+                            <div class="action-group">
+                                <h3>💾 Data Management</h3>
+                                <button onclick="downloadMindMap()" class="btn btn-success">
+                                    📥 Save Mind Map
+                                </button>
+                                <button onclick="document.getElementById('file-input').click()" class="btn btn-info">
+                                    📤 Load Mind Map
+                                </button>
+                                <button onclick="createSampleMap()" class="btn btn-sample">
+                                    🌟 Sample Map
+                                </button>
+                                <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
                             </div>
                         </div>
-                        
-                        <button onclick="exportActionPlan()" style="background: #fd7e14;">📈 Export Action Plan</button>
-                        <button onclick="downloadMindMap()" style="background: #28a745;">📥 Save Mind Map</button>
-                        <button onclick="document.getElementById('file-input').click()" style="background: #17a2b8;">📤 Load Mind Map</button>
-                        <button onclick="createSampleMap()" style="background: #6f42c1;">🌟 Create Sample Map</button>
-                        <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
-                        <div style="font-size: 12px; color: #666; margin-top: 5px; text-align: center;">
-                            Export CSV action plan, save/load mind maps as JSON, or create sample data
+
+                        <!-- Settings Panel (Collapsible) -->
+                        <div class="settings-panel">
+                            <button class="settings-toggle" onclick="toggleSettings()">
+                                ⚙️ View & Export Options <span id="settings-arrow">▼</span>
+                            </button>
+                            
+                            <div id="settings-content" class="settings-content">
+                                <div class="settings-row">
+                                    <div class="setting-group">
+                                        <h4>👁️ Display Options</h4>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="show-sequences" onchange="toggleSequenceDisplay()">
+                                            <span>Show Sequence Numbers</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="show-dates-times" onchange="toggleFullMetadata()">
+                                            <span>Show Time Metadata</span>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="setting-group">
+                                        <h4>📊 Export Options</h4>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="export-leaves-only">
+                                            <span>Export only end tasks (leaf nodes)</span>
+                                        </label>
+                                        <p class="help-text">Export only actionable tasks, skip categories</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Help (Collapsible) -->
+                        <div class="help-panel">
+                            <button class="help-toggle" onclick="toggleHelp()">
+                                ❓ Keyboard Shortcuts <span id="help-arrow">▶</span>
+                            </button>
+                            
+                            <div id="help-content" class="help-content" style="display: none;">
+                                <div class="shortcut-grid">
+                                    <div class="shortcut-item">
+                                        <kbd>Enter</kbd>
+                                        <span>Create sibling</span>
+                                    </div>
+                                    <div class="shortcut-item">
+                                        <kbd>Tab</kbd>
+                                        <span>Create child</span>
+                                    </div>
+                                    <div class="shortcut-item">
+                                        <kbd>F2</kbd>
+                                        <span>Edit node</span>
+                                    </div>
+                                    <div class="shortcut-item">
+                                        <kbd>Delete</kbd>
+                                        <span>Delete node</span>
+                                    </div>
+                                    <div class="shortcut-item">
+                                        <kbd>Esc</kbd>
+                                        <span>Cancel editing</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
             </div>
             </div>
-        </div>        <div class="shortcuts">
-            <h3>Keyboard Shortcuts (FreeMind-like)</h3>
-            <p><kbd>Enter</kbd> - Create sibling node | <kbd>Tab</kbd> - Create child node | <kbd>F2</kbd> - Edit node | <kbd>Delete</kbd> - Delete node and its children | <kbd>Esc</kbd> - Cancel editing</p>
-        </div>
-
-        <script src="jsmind/es6/jsmind.js"></script>
+        </div>        <script src="jsmind/es6/jsmind.js"></script>
         <script src="jsmind/es6/jsmind.draggable-node.js"></script>
         <script type="text/javascript">
             // Global variable to track current selected node
@@ -1794,6 +2079,42 @@
                     }, 10);
                 });
             }
+
+            // ===== UI TOGGLE FUNCTIONS =====
+            
+            /**
+             * Toggle settings panel visibility
+             */
+            function toggleSettings() {
+                const content = document.getElementById('settings-content');
+                const arrow = document.getElementById('settings-arrow');
+                
+                if (content.style.display === 'none') {
+                    content.style.display = 'block';
+                    arrow.textContent = '▼';
+                } else {
+                    content.style.display = 'none';
+                    arrow.textContent = '▶';
+                }
+            }
+
+            /**
+             * Toggle help panel visibility
+             */
+            function toggleHelp() {
+                const content = document.getElementById('help-content');
+                const arrow = document.getElementById('help-arrow');
+                
+                if (content.style.display === 'none') {
+                    content.style.display = 'block';
+                    arrow.textContent = '▼';
+                } else {
+                    content.style.display = 'none';
+                    arrow.textContent = '▶';
+                }
+            }
+            
+            // ===== END UI TOGGLE FUNCTIONS =====
 
             // Initialize when page loads
             window.addEventListener('load', function() {
