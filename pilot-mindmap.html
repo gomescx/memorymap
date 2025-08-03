@@ -397,6 +397,17 @@
                             Show Dates and Times
                         </label>
                     </div>
+                    
+                    <!-- Data Persistence Controls (Feature 4) -->
+                    <div class="mindmap-controls" style="border-top: 1px solid #ddd; padding-top: 15px; margin-top: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #333; font-size: 16px;">💾 Data Persistence</h4>
+                        <button onclick="downloadMindMap()" style="background: #28a745;">📥 Save Mind Map</button>
+                        <button onclick="document.getElementById('file-input').click()" style="background: #17a2b8;">📤 Load Mind Map</button>
+                        <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
+                        <div style="font-size: 12px; color: #666; margin-top: 5px; text-align: center;">
+                            Save your mind map as JSON or load a previously saved file
+                        </div>
+                    </div>
             </div>
             </div>
         </div>        <div class="shortcuts">
@@ -1087,6 +1098,199 @@
                 }
             }
 
+            // ===== DATA PERSISTENCE (FEATURE 4) =====
+            
+            /**
+             * Feature 4.1: Download the mind map as a JSON file
+             */
+            function downloadMindMap() {
+                console.log('=== DOWNLOADING MIND MAP ===');
+                
+                if (!jm) {
+                    console.error('Mind map not initialized');
+                    alert('Mind map is not ready yet. Please wait a moment and try again.');
+                    return;
+                }
+                
+                try {
+                    // Get the mind map data in node_array format
+                    var mindData = jm.get_data('node_array');
+                    
+                    if (!mindData) {
+                        console.error('Failed to get mind map data');
+                        alert('Failed to get mind map data. Please try again.');
+                        return;
+                    }
+                    
+                    // Ensure all nodes have their extended data (sequence, times)
+                    updateAllSequenceNumbers(); // Make sure sequences are current
+                    
+                    // Get the updated data after sequence calculation
+                    mindData = jm.get_data('node_array');
+                    
+                    // Add metadata about the export
+                    mindData.meta.export_date = new Date().toISOString();
+                    mindData.meta.application = 'PEP Memory Map';
+                    mindData.meta.version = '1.0';
+                    
+                    // Convert to JSON string
+                    var jsonString = JSON.stringify(mindData, null, 2);
+                    
+                    // Create filename with timestamp
+                    var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                    var filename = 'pep-memory-map-' + timestamp + '.json';
+                    
+                    // Create and trigger download
+                    var blob = new Blob([jsonString], { type: 'application/json' });
+                    var url = URL.createObjectURL(blob);
+                    
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.style.display = 'none';
+                    
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    URL.revokeObjectURL(url);
+                    
+                    console.log('✓ Mind map downloaded successfully as:', filename);
+                    
+                    // Show success feedback
+                    showNotification('Mind map saved successfully!', 'success');
+                    
+                } catch (error) {
+                    console.error('Error downloading mind map:', error);
+                    alert('Error saving mind map: ' + error.message);
+                }
+            }
+            
+            /**
+             * Feature 4.2: Upload and load a saved JSON file
+             */
+            function loadMindMap(event) {
+                console.log('=== LOADING MIND MAP ===');
+                
+                var file = event.target.files[0];
+                if (!file) {
+                    return;
+                }
+                
+                if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+                    alert('Please select a valid JSON file.');
+                    return;
+                }
+                
+                // Confirm before loading (since it will replace current data)
+                if (!confirm('Loading a mind map will replace your current work. Are you sure you want to continue?')) {
+                    // Reset the file input
+                    event.target.value = '';
+                    return;
+                }
+                
+                var reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        var jsonData = JSON.parse(e.target.result);
+                        
+                        // Validate the JSON structure
+                        if (!jsonData.format || !jsonData.data || !Array.isArray(jsonData.data)) {
+                            throw new Error('Invalid mind map file format');
+                        }
+                        
+                        // Check if it's a supported format
+                        if (jsonData.format !== 'node_array' && jsonData.format !== 'node_tree') {
+                            throw new Error('Unsupported mind map format: ' + jsonData.format);
+                        }
+                        
+                        console.log('Loading mind map with', jsonData.data.length, 'nodes');
+                        
+                        // Clear current mind map and load new data
+                        jm.show(jsonData);
+                        
+                        // Re-initialize the sequence system
+                        setTimeout(function() {
+                            updateAllSequenceNumbers();
+                            
+                            // Select root node
+                            jm.select_node('root');
+                            updateMetadataSidebar(jm);
+                            
+                            // If sequence display is enabled, refresh it
+                            var sequenceCheckbox = document.getElementById('show-sequences');
+                            if (sequenceCheckbox && sequenceCheckbox.checked) {
+                                toggleSequenceDisplay();
+                                toggleSequenceDisplay(); // Toggle twice to refresh
+                            }
+                            
+                            // If metadata display is enabled, refresh it
+                            var metadataCheckbox = document.getElementById('show-dates-times');
+                            if (metadataCheckbox && metadataCheckbox.checked) {
+                                toggleFullMetadata();
+                                toggleFullMetadata(); // Toggle twice to refresh
+                            }
+                            
+                            console.log('✓ Mind map loaded successfully');
+                            showNotification('Mind map loaded successfully!', 'success');
+                            
+                        }, 500);
+                        
+                    } catch (error) {
+                        console.error('Error loading mind map:', error);
+                        alert('Error loading mind map: ' + error.message);
+                    }
+                    
+                    // Reset the file input
+                    event.target.value = '';
+                };
+                
+                reader.onerror = function() {
+                    console.error('Error reading file');
+                    alert('Error reading file. Please try again.');
+                    event.target.value = '';
+                };
+                
+                reader.readAsText(file);
+            }
+            
+            /**
+             * Show notification feedback to user
+             */
+            function showNotification(message, type) {
+                // Create notification element
+                var notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 6px;
+                    color: white;
+                    font-size: 14px;
+                    font-weight: 500;
+                    z-index: 10000;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    transition: all 0.3s ease;
+                    background: ${type === 'success' ? '#28a745' : '#dc3545'};
+                `;
+                notification.textContent = message;
+                
+                document.body.appendChild(notification);
+                
+                // Auto-remove after 3 seconds
+                setTimeout(function() {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(function() {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+            
+            // ===== END DATA PERSISTENCE =====
+            
             function initializeMindMap() {
                 // Simple mind map with just the main node
                 var mind = {

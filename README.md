@@ -9,6 +9,7 @@ A customizable mind mapping tool based on jsMind with FreeMind-like keyboard sho
 - **Extended data model** to support custom attributes (sequence, invested_time, elapsed_time)
 - **Real-time editing** with proper Enter key handling
 - **Drag and drop** node repositioning
+- **Data persistence** (save/load mind maps as JSON files)
 - **Export capabilities** (ready for CSV implementation)
 
 ## ⌨️ Keyboard Shortcuts
@@ -49,6 +50,7 @@ jsmind-poc/
 - **Task 1.1**: ✅ Fork jsMind repo and set up local dev environment
 - **Task 1.2**: ✅ Clean UI for pilot - preserve only core mind mapping
 - **Bug Fix**: ✅ Fixed Enter key creating nodes while editing text
+- **Feature 4**: ✅ Data Persistence - Save/load mind maps as JSON files
 
 ## 🎨 Extended Data Model
 
