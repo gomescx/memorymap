@@ -216,6 +216,92 @@
                 margin-top: 2px;
                 text-align: center;    /* Center the metadata text */
             }
+
+            /* Collapsible Sidebar Tab */
+            .sidebar-tab {
+                position: fixed;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar-tab.expanded {
+                left: 320px; /* Width of expanded sidebar */
+            }
+
+            .tab-handle {
+                background: #0078d4;
+                color: white;
+                padding: 15px 8px;
+                border-radius: 0 8px 8px 0;
+                cursor: pointer;
+                writing-mode: vertical-rl;
+                text-orientation: mixed;
+                font-size: 12px;
+                font-weight: 500;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+                min-height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background 0.3s ease;
+            }
+
+            .tab-handle:hover {
+                background: #106ebe;
+            }
+
+            .sidebar-panel {
+                position: fixed;
+                left: -320px;
+                top: 0;
+                width: 320px;
+                height: 100vh;
+                background: white;
+                border-right: 2px solid #ddd;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+                transition: left 0.3s ease;
+                overflow-y: auto;
+                padding: 20px;
+                box-sizing: border-box;
+                z-index: 999;
+            }
+
+            .sidebar-panel.expanded {
+                left: 0;
+            }
+
+            .pin-button {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: none;
+                border: none;
+                font-size: 16px;
+                cursor: pointer;
+                color: #666;
+                padding: 5px;
+                border-radius: 3px;
+            }
+
+            .pin-button:hover {
+                background: #f0f0f0;
+            }
+
+            .pin-button.pinned {
+                color: #0078d4;
+            }
+
+            /* Adjust main content when sidebar is pinned */
+            .main-content {
+                transition: margin-left 0.3s ease;
+            }
+
+            .main-content.sidebar-pinned {
+                margin-left: 320px;
+            }
         </style>
     </head>
 
@@ -225,22 +311,32 @@
             <p>Clean mind mapping interface with FreeMind-like keyboard shortcuts</p>
         </div>
         
-        <div class="main-container">
-            <div class="mindmap-section">
-                <div id="jsmind_container"></div>
-                
-                <!-- Mindmap Control Buttons moved below -->
-                <div class="mindmap-controls">
-                    <button onclick="updateSequences()">Update Sequences</button>
-                    <button onclick="toggleSequenceDisplay()">Toggle Sequence Numbers</button>
-                    <button onclick="toggleFullMetadata()">Toggle Full Metadata</button>
+        <div class="main-content" id="main-content">
+            <!-- Collapsible Sidebar Tab -->
+            <div class="sidebar-tab" id="sidebar-tab">
+                <div class="tab-handle" id="tab-handle">
+                    📊 Edit Mode
                 </div>
             </div>
-            
-            <div class="metadata-sidebar">
+
+            <!-- Sidebar Panel -->
+            <div class="sidebar-panel" id="sidebar-panel">
+                <button class="pin-button" id="pin-button" title="Pin sidebar">📌</button>
+                
                 <h3>📊 Task Metadata</h3>
                 
-                <div id="metadata-content">
+                <!-- Edit Mode Toggle -->
+                <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;">
+                    <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal; margin: 0;">
+                        <input type="checkbox" id="edit-mode-toggle" style="margin-right: 10px; cursor: pointer;">
+                        <span id="edit-mode-label">Edit Mode Off</span>
+                    </label>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px; margin-left: 22px;">
+                        Enable to edit node metadata without keyboard shortcuts interfering
+                    </div>
+                </div>
+
+                <div id="metadata-content" style="display: none;">
                     <div id="no-selection" class="no-selection">
                         Select a node to view and edit its metadata.
                     </div>
@@ -252,6 +348,11 @@
                         </div>
                         
                         <form class="metadata-form" id="metadata-form">
+                            <div class="form-group">
+                                <label for="node-name">Node Name:</label>
+                                <input type="text" id="node-name" placeholder="Enter node name...">
+                            </div>
+                            
                             <div class="form-group">
                                 <label for="node-sequence">Sequence Number (Auto-calculated):</label>
                                 <input type="text" id="node-sequence" readonly style="background-color: #f8f9fa; cursor: not-allowed;" placeholder="Automatically assigned...">
@@ -279,9 +380,26 @@
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="shortcuts">
+            
+            <div class="main-container">
+                <div class="mindmap-section">
+                    <div id="jsmind_container"></div>
+                    
+                    <!-- Mindmap Control Buttons moved below -->
+                    <div class="mindmap-controls">
+                        <button onclick="updateSequences()">Update Sequences</button>
+                        <label style="margin: 5px 15px; display: inline-flex; align-items: center; cursor: pointer; font-size: 14px; color: #333;">
+                            <input type="checkbox" id="show-sequences" style="margin-right: 8px; cursor: pointer;" onchange="toggleSequenceDisplay()">
+                            Show Sequence Numbers
+                        </label>
+                        <label style="margin: 5px 15px; display: inline-flex; align-items: center; cursor: pointer; font-size: 14px; color: #333;">
+                            <input type="checkbox" id="show-dates-times" style="margin-right: 8px; cursor: pointer;" onchange="toggleFullMetadata()">
+                            Show Dates and Times
+                        </label>
+                    </div>
+            </div>
+            </div>
+        </div>        <div class="shortcuts">
             <h3>Keyboard Shortcuts (FreeMind-like)</h3>
             <p><kbd>Enter</kbd> - Create sibling node | <kbd>Tab</kbd> - Create child node | <kbd>F2</kbd> - Edit node | <kbd>Delete</kbd> - Delete node and its children | <kbd>Esc</kbd> - Cancel editing</p>
             <p style="margin-top: 10px;"><strong>Instructions:</strong> Click on the "Main Node" first to select it, then use the keyboard shortcuts.</p>
@@ -472,7 +590,10 @@
                     return;
                 }
                 
-                showSequences = !showSequences;
+                // Get checkbox state
+                var checkbox = document.getElementById('show-sequences');
+                showSequences = checkbox ? checkbox.checked : !showSequences;
+                
                 console.log((showSequences ? 'Showing' : 'Hiding') + ' sequence numbers on nodes');
                 
                 var allNodeElements = document.querySelectorAll('jmnode[nodeid]');
@@ -521,7 +642,10 @@
                     return;
                 }
                 
-                showMetadata = !showMetadata;
+                // Get checkbox state
+                var checkbox = document.getElementById('show-dates-times');
+                showMetadata = checkbox ? checkbox.checked : !showMetadata;
+                
                 console.log((showMetadata ? 'Showing' : 'Hiding') + ' full metadata on nodes');
                 
                 var allNodeElements = document.querySelectorAll('jmnode[nodeid]');
@@ -590,11 +714,14 @@
                     console.log('Node added: ' + data.nodeid);
                     setTimeout(function() {
                         updateAllSequenceNumbers();
-                        if (showSequences) {
+                        var sequenceCheckbox = document.getElementById('show-sequences');
+                        var metadataCheckbox = document.getElementById('show-dates-times');
+                        
+                        if (sequenceCheckbox && sequenceCheckbox.checked) {
                             toggleSequenceDisplay();
                             toggleSequenceDisplay(); // Toggle twice to refresh
                         }
-                        if (showMetadata) {
+                        if (metadataCheckbox && metadataCheckbox.checked) {
                             toggleFullMetadata();
                             toggleFullMetadata(); // Toggle twice to refresh
                         }
@@ -606,11 +733,14 @@
                     console.log('Node removed: ' + data.nodeid);
                     setTimeout(function() {
                         updateAllSequenceNumbers();
-                        if (showSequences) {
+                        var sequenceCheckbox = document.getElementById('show-sequences');
+                        var metadataCheckbox = document.getElementById('show-dates-times');
+                        
+                        if (sequenceCheckbox && sequenceCheckbox.checked) {
                             toggleSequenceDisplay();
                             toggleSequenceDisplay(); // Toggle twice to refresh
                         }
-                        if (showMetadata) {
+                        if (metadataCheckbox && metadataCheckbox.checked) {
                             toggleFullMetadata();
                             toggleFullMetadata(); // Toggle twice to refresh
                         }
@@ -669,7 +799,8 @@
                 var success = updateAllSequenceNumbers();
                 
                 // If sequences are currently visible, refresh the display
-                if (success && showSequences) {
+                var sequenceCheckbox = document.getElementById('show-sequences');
+                if (success && sequenceCheckbox && sequenceCheckbox.checked) {
                     // Force refresh by toggling twice
                     toggleSequenceDisplay(); // Hide
                     toggleSequenceDisplay(); // Show again with new data
@@ -677,7 +808,8 @@
                 }
                 
                 // If metadata is currently visible, refresh the display
-                if (success && showMetadata) {
+                var metadataCheckbox = document.getElementById('show-dates-times');
+                if (success && metadataCheckbox && metadataCheckbox.checked) {
                     // Force refresh by toggling twice
                     toggleFullMetadata(); // Hide
                     toggleFullMetadata(); // Show again with new data
@@ -691,6 +823,111 @@
             
             // ===== END SEQUENCE AND METADATA SYSTEM =====
             
+            function setupCollapsibleSidebar() {
+                const sidebarTab = document.getElementById('sidebar-tab');
+                const sidebarPanel = document.getElementById('sidebar-panel');
+                const tabHandle = document.getElementById('tab-handle');
+                const pinButton = document.getElementById('pin-button');
+                const mainContent = document.getElementById('main-content');
+                const editModeToggle = document.getElementById('edit-mode-toggle');
+                const metadataContent = document.getElementById('metadata-content');
+                
+                // Ensure edit mode is unchecked by default
+                editModeToggle.checked = false;
+                metadataContent.style.display = 'none';
+                
+                let isExpanded = false;
+                let isPinned = false;
+                let hoverTimeout;
+
+                // Tab hover/click to expand
+                tabHandle.addEventListener('mouseenter', () => {
+                    if (!isPinned) {
+                        clearTimeout(hoverTimeout);
+                        expandSidebar();
+                    }
+                });
+
+                tabHandle.addEventListener('click', () => {
+                    if (isExpanded && !isPinned) {
+                        collapseSidebar();
+                    } else {
+                        expandSidebar();
+                    }
+                });
+
+                // Collapse on mouse leave (if not pinned)
+                sidebarPanel.addEventListener('mouseleave', () => {
+                    if (!isPinned) {
+                        hoverTimeout = setTimeout(() => {
+                            collapseSidebar();
+                        }, 300);
+                    }
+                });
+
+                sidebarPanel.addEventListener('mouseenter', () => {
+                    clearTimeout(hoverTimeout);
+                });
+
+                // Pin button
+                pinButton.addEventListener('click', () => {
+                    isPinned = !isPinned;
+                    pinButton.textContent = isPinned ? '📍' : '📌';
+                    pinButton.classList.toggle('pinned', isPinned);
+                    
+                    if (isPinned) {
+                        expandSidebar();
+                        mainContent.classList.add('sidebar-pinned');
+                    } else {
+                        mainContent.classList.remove('sidebar-pinned');
+                    }
+                });
+
+                // Edit mode toggle
+                editModeToggle.addEventListener('change', function() {
+                    const isEditMode = this.checked;
+                    const label = document.getElementById('edit-mode-label');
+                    
+                    if (isEditMode) {
+                        metadataContent.style.display = 'block';
+                        label.textContent = 'Edit Mode On';
+                        tabHandle.style.background = '#28a745'; // Green when active
+                        
+                        // Also check the Show Sequence Numbers and Show Dates and Times checkboxes
+                        const showSequencesCheckbox = document.getElementById('show-sequences');
+                        const showDatesTimesCheckbox = document.getElementById('show-dates-times');
+                        
+                        if (showSequencesCheckbox && !showSequencesCheckbox.checked) {
+                            showSequencesCheckbox.checked = true;
+                            toggleSequenceDisplay(); // Trigger the display update
+                        }
+                        
+                        if (showDatesTimesCheckbox && !showDatesTimesCheckbox.checked) {
+                            showDatesTimesCheckbox.checked = true;
+                            toggleFullMetadata(); // Trigger the display update
+                        }
+                    } else {
+                        metadataContent.style.display = 'none';
+                        label.textContent = 'Edit Mode Off';
+                        tabHandle.style.background = '#0078d4'; // Blue default
+                    }
+                });
+
+                function expandSidebar() {
+                    isExpanded = true;
+                    sidebarPanel.classList.add('expanded');
+                    sidebarTab.classList.add('expanded');
+                }
+
+                function collapseSidebar() {
+                    if (!isPinned) {
+                        isExpanded = false;
+                        sidebarPanel.classList.remove('expanded');
+                        sidebarTab.classList.remove('expanded');
+                    }
+                }
+            }
+            
             function setupMetadataHandling(jm) {
                 // Handle node selection changes
                 jm.add_event_listener(function(type, data) {
@@ -699,7 +936,7 @@
                         updateMetadataSidebar(jm);
                     }
                 });
-                
+
                 // Handle save button
                 document.getElementById('save-metadata').addEventListener('click', function() {
                     saveNodeMetadata(jm);
@@ -746,6 +983,7 @@
                 
                 // Update form fields with current data using the new data initialization
                 var data = initNodeData(selected);
+                document.getElementById('node-name').value = selected.topic || '';
                 document.getElementById('node-sequence').value = data.sequence || '';
                 document.getElementById('invested-time').value = data.invested_time || '';
                 document.getElementById('elapsed-time').value = data.elapsed_time || '';
@@ -776,6 +1014,14 @@
                 var selected = jm.get_selected_node();
                 if (!selected) return;
                 
+                // Get the new node name and update the node topic if changed
+                var newNodeName = document.getElementById('node-name').value.trim();
+                if (newNodeName && newNodeName !== selected.topic) {
+                    jm.update_node(selected.id, newNodeName);
+                    // Update the sidebar title to reflect the change
+                    document.getElementById('selected-node-title').textContent = newNodeName;
+                }
+                
                 // Only save user-editable fields (not sequence, which is auto-calculated)
                 var investedTime = parseFloat(document.getElementById('invested-time').value) || 0;
                 var elapsedTime = parseFloat(document.getElementById('elapsed-time').value) || 0;
@@ -798,6 +1044,9 @@
                     invested_time: investedTime,
                     elapsed_time: elapsedTime
                 });
+                
+                // Run the same functionality as Update Sequences to update all nodes
+                updateSequences();
                 
                 // Show success feedback (optional)
                 var saveBtn = document.getElementById('save-metadata');
@@ -870,6 +1119,9 @@
                 // Initialize metadata handling
                 setupMetadataHandling(jm);
                 
+                // Initialize collapsible sidebar
+                setupCollapsibleSidebar();
+                
                 // Initialize sequence system
                 setupSequenceEvents(jm);
                 
@@ -912,13 +1164,31 @@
             
             function setupFreeMindShortcuts(jm) {
                 document.addEventListener('keydown', function(e) {
+                    // Check if we're in edit mode (sidebar visible)
+                    var editModeToggle = document.getElementById('edit-mode-toggle');
+                    var isInEditMode = editModeToggle && editModeToggle.checked;
+                    
+                    // Check if focus is on an input field in the metadata sidebar
+                    var activeElement = document.activeElement;
+                    var isEditingMetadata = isInEditMode && (
+                        activeElement.id === 'invested-time' ||
+                        activeElement.id === 'elapsed-time' ||
+                        activeElement.closest('#sidebar-panel')
+                    );
+                    
                     var selected_node = jm.get_selected_node();
                     
                     // Check if we're currently in editing mode
                     var isEditing = jm.view.editing_node !== null;
                     
                     // Debug logging
-                    console.log('Key pressed:', e.keyCode, 'Selected node:', selected_node, 'Editing:', isEditing);
+                    console.log('Key pressed:', e.keyCode, 'Selected node:', selected_node, 'Editing:', isEditing, 'EditMode:', isInEditMode, 'EditingMetadata:', isEditingMetadata);
+                    
+                    // If we're editing metadata in the sidebar, don't handle shortcuts
+                    if (isEditingMetadata) {
+                        console.log('Ignoring shortcut - editing metadata in sidebar');
+                        return;
+                    }
                     
                     // If we're in editing mode, don't handle shortcuts (except Escape)
                     if (isEditing) {
