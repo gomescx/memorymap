@@ -403,6 +403,7 @@
                         <h4 style="margin: 0 0 10px 0; color: #333; font-size: 16px;">💾 Data Persistence</h4>
                         <button onclick="downloadMindMap()" style="background: #28a745;">📥 Save Mind Map</button>
                         <button onclick="document.getElementById('file-input').click()" style="background: #17a2b8;">📤 Load Mind Map</button>
+                        <button onclick="createSampleMap()" style="background: #6f42c1;">🌟 Create Sample Map</button>
                         <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
                         <div style="font-size: 12px; color: #666; margin-top: 5px; text-align: center;">
                             Save your mind map as JSON or load a previously saved file
@@ -413,59 +414,11 @@
         </div>        <div class="shortcuts">
             <h3>Keyboard Shortcuts (FreeMind-like)</h3>
             <p><kbd>Enter</kbd> - Create sibling node | <kbd>Tab</kbd> - Create child node | <kbd>F2</kbd> - Edit node | <kbd>Delete</kbd> - Delete node and its children | <kbd>Esc</kbd> - Cancel editing</p>
-            <p style="margin-top: 10px;"><strong>Instructions:</strong> Click on the "Main Node" first to select it, then use the keyboard shortcuts.</p>
-            <p style="margin-top: 5px; font-size: 12px; color: #666;"><strong>Note:</strong> Deleting a node will also delete all its child nodes, but never parent nodes.</p>
-            <p style="margin-top: 5px; font-size: 12px; color: #007bff;"><strong>New:</strong> Use the metadata sidebar on the right to add invested time and elapsed time to each task. Sequence numbers are automatically calculated.</p>
-            <p style="margin-top: 5px; font-size: 12px; color: #28a745;"><strong>Auto-Sequencing:</strong> Sequence numbers are automatically assigned using simple child order (e.g., 1, 2, 1.1, 1.2, 2.1). Use the buttons above the mindmap to toggle display.</p>
-            <p style="margin-top: 5px; font-size: 12px; color: #6f42c1;"><strong>Display Controls:</strong> Use the buttons above the mindmap to show/hide sequence numbers or full metadata on nodes.</p>
-            <p style="margin-top: 5px; font-size: 12px; color: #666;">Check the browser console (F12) for debug messages.</p>
-            
-            <!-- Debug and Test buttons -->
-            <button onclick="debugNodes()" style="margin-top: 10px; padding: 5px 10px; background: #28a745; color: white; border: none; border-radius: 3px; margin-right: 10px;">Debug Nodes</button>
-            <button onclick="createTestNodes()" style="margin-top: 10px; padding: 5px 10px; background: #28a745; color: white; border: none; border-radius: 3px;">Create Test Nodes</button>
         </div>
 
         <script src="jsmind/es6/jsmind.js"></script>
         <script src="jsmind/es6/jsmind.draggable-node.js"></script>
         <script type="text/javascript">
-            // Test function to create sample nodes
-            function createTestNodes() {
-                if (!window.jm) {
-                    console.log('Mind map not ready yet');
-                    alert('Mind map not ready yet');
-                    return;
-                }
-                
-                var jm = window.jm;
-                console.log('Creating test nodes...');
-                
-                // Add some child nodes
-                jm.add_node('root', 'task1', 'Planning Phase');
-                jm.add_node('root', 'task2', 'Development Phase'); 
-                jm.add_node('root', 'task3', 'Testing Phase');
-                
-                // Add some grandchildren after a delay
-                setTimeout(function() {
-                    jm.add_node('task1', 'task1_1', 'Requirements Gathering');
-                    jm.add_node('task1', 'task1_2', 'Architecture Design');
-                    jm.add_node('task2', 'task2_1', 'Frontend Development');
-                    jm.add_node('task2', 'task2_2', 'Backend Development');
-                    
-                    // Add great-grandchildren after another delay
-                    setTimeout(function() {
-                        jm.add_node('task1_1', 'task1_1_1', 'User Stories');
-                        jm.add_node('task1_1', 'task1_1_2', 'Technical Requirements');
-                        
-                        // Force update sequences after all nodes are created
-                        setTimeout(function() {
-                            console.log('Force updating sequences after test node creation...');
-                            updateAllSequenceNumbers();
-                        }, 500);
-                        
-                        console.log('Test nodes created! Try the toggle buttons above the mindmap.');
-                    }, 300);
-                }, 200);
-            }
             // Global variable to track current selected node
             var currentSelectedNode = null;
             
@@ -473,6 +426,113 @@
             var showSequences = false;
             var showMetadata = false;
             var jm; // Global reference to jsMind instance
+            
+            // ===== SAMPLE MAP CREATION =====
+            
+            /**
+             * Create a sample mind map with test nodes for demonstration
+             */
+            function createSampleMap() {
+                if (!window.jm) {
+                    console.log('Mind map not ready yet');
+                    alert('Mind map not ready yet. Please wait a moment and try again.');
+                    return;
+                }
+                
+                // Confirm before creating sample (since it will replace current data)
+                if (!confirm('Creating a sample map will replace your current work. Are you sure you want to continue?')) {
+                    return;
+                }
+                
+                var jm = window.jm;
+                console.log('Creating sample mind map...');
+                
+                // First clear the current map by recreating it with just the root
+                var sampleMind = {
+                    meta: {
+                        name: 'PEP Memory Map - Sample',
+                        author: 'PEP Team',
+                        version: '1.0',
+                    },
+                    format: 'node_array',
+                    data: [
+                        { 
+                            id: 'root', 
+                            isroot: true, 
+                            topic: 'Project Launch'
+                        }
+                    ],
+                };
+                
+                jm.show(sampleMind);
+                
+                // Add sample nodes with a delay to ensure proper rendering
+                setTimeout(function() {
+                    // Add main project phases
+                    jm.add_node('root', 'phase1', 'Planning Phase');
+                    jm.add_node('root', 'phase2', 'Development Phase'); 
+                    jm.add_node('root', 'phase3', 'Testing Phase');
+                    jm.add_node('root', 'phase4', 'Deployment Phase');
+                    
+                    // Add detailed tasks after a short delay
+                    setTimeout(function() {
+                        // Planning phase tasks
+                        jm.add_node('phase1', 'plan1', 'Requirements Gathering');
+                        jm.add_node('phase1', 'plan2', 'Architecture Design');
+                        jm.add_node('phase1', 'plan3', 'Resource Planning');
+                        
+                        // Development phase tasks
+                        jm.add_node('phase2', 'dev1', 'Frontend Development');
+                        jm.add_node('phase2', 'dev2', 'Backend Development');
+                        jm.add_node('phase2', 'dev3', 'Database Setup');
+                        
+                        // Testing phase tasks
+                        jm.add_node('phase3', 'test1', 'Unit Testing');
+                        jm.add_node('phase3', 'test2', 'Integration Testing');
+                        
+                        // Add sub-tasks for some items
+                        setTimeout(function() {
+                            jm.add_node('plan1', 'plan1_1', 'User Stories');
+                            jm.add_node('plan1', 'plan1_2', 'Technical Requirements');
+                            jm.add_node('dev1', 'dev1_1', 'UI Design');
+                            jm.add_node('dev1', 'dev1_2', 'Component Development');
+                            
+                            // Add some sample metadata to nodes
+                            setTimeout(function() {
+                                var nodes = [
+                                    { id: 'plan1', invested: 4, elapsed: 5 },
+                                    { id: 'plan2', invested: 6, elapsed: 8 },
+                                    { id: 'dev1', invested: 12, elapsed: 15 },
+                                    { id: 'dev2', invested: 16, elapsed: 20 },
+                                    { id: 'test1', invested: 3, elapsed: 4 }
+                                ];
+                                
+                                nodes.forEach(function(nodeInfo) {
+                                    var node = jm.get_node(nodeInfo.id);
+                                    if (node) {
+                                        var data = initNodeData(node);
+                                        data.invested_time = nodeInfo.invested;
+                                        data.elapsed_time = nodeInfo.elapsed;
+                                    }
+                                });
+                                
+                                // Force update sequences after all nodes are created
+                                updateAllSequenceNumbers();
+                                
+                                // Select root node
+                                jm.select_node('root');
+                                updateMetadataSidebar(jm);
+                                
+                                console.log('✓ Sample mind map created successfully!');
+                                showNotification('Sample mind map created! Try the display options and explore the nodes.', 'success');
+                                
+                            }, 200);
+                        }, 200);
+                    }, 200);
+                }, 300);
+            }
+            
+            // ===== END SAMPLE MAP CREATION =====
             
             // ===== SEQUENCE AND METADATA SYSTEM =====
             
@@ -759,49 +819,6 @@
                 });
 
                 console.log('✓ Sequence event listeners set up');
-            }
-
-            /**
-             * Debug function to show all node information
-             */
-            function debugNodes() {
-                console.log('=== DEBUGGING ALL NODES ===');
-                if (!jm) {
-                    console.error('jm not available');
-                    return;
-                }
-                
-                var allData = jm.get_data();
-                console.log('Total nodes in mindmap:', allData ? allData.data.length : 0);
-                
-                if (allData && allData.data) {
-                    for (var i = 0; i < allData.data.length; i++) {
-                        var nodeData = allData.data[i];
-                        var node = jm.get_node(nodeData.id);
-                        
-                        if (node) {
-                            var data = initNodeData(node);
-                            console.log('Node "' + node.topic + '" (ID: ' + node.id + ')');
-                            console.log('  Sequence: "' + (data.sequence || 'UNDEFINED') + '"');
-                            console.log('  Parent: ' + (node.parent || 'none'));
-                            console.log('  Children: ' + (node.children ? node.children.join(', ') : 'none'));
-                            console.log('  Invested Time: ' + data.invested_time + 'h');
-                            console.log('  Elapsed Time: ' + data.elapsed_time + 'h');
-                            console.log('  Raw node.data:', node.data);
-                        }
-                    }
-                }
-                
-                // Also check DOM elements
-                var allNodeElements = document.querySelectorAll('jmnode[nodeid]');
-                console.log('DOM node elements found:', allNodeElements.length);
-                for (var j = 0; j < allNodeElements.length; j++) {
-                    var elem = allNodeElements[j];
-                    var nodeId = elem.getAttribute('nodeid');
-                    console.log('  DOM element for node:', nodeId, 'text:', elem.textContent);
-                }
-                
-                console.log('=== DEBUG COMPLETE ===');
             }
 
             // Wrapper function for button
