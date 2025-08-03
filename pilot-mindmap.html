@@ -209,10 +209,12 @@
             /* Metadata display styling */
             .metadata { 
                 font-size: 10px; 
-                color: #666; 
+                color: #444;           /* <-- This makes it grey */
+                background-color: #8ebfe9; /* Light background for contrast */
                 border-top: 1px solid #ccc; 
                 padding-top: 2px; 
                 margin-top: 2px;
+                text-align: center;    /* Center the metadata text */
             }
         </style>
     </head>
@@ -225,16 +227,14 @@
         
         <div class="main-container">
             <div class="mindmap-section">
-                <!-- Mindmap Control Buttons -->
+                <div id="jsmind_container"></div>
+                
+                <!-- Mindmap Control Buttons moved below -->
                 <div class="mindmap-controls">
                     <button onclick="updateSequences()">Update Sequences</button>
                     <button onclick="toggleSequenceDisplay()">Toggle Sequence Numbers</button>
                     <button onclick="toggleFullMetadata()">Toggle Full Metadata</button>
-                    <button onclick="debugNodes()">Debug Nodes</button>
-                    <button onclick="forceSequenceTest()" style="background: #28a745;">Force Sequence Test</button>
                 </div>
-                
-                <div id="jsmind_container"></div>
             </div>
             
             <div class="metadata-sidebar">
@@ -291,7 +291,8 @@
             <p style="margin-top: 5px; font-size: 12px; color: #6f42c1;"><strong>Display Controls:</strong> Use the buttons above the mindmap to show/hide sequence numbers or full metadata on nodes.</p>
             <p style="margin-top: 5px; font-size: 12px; color: #666;">Check the browser console (F12) for debug messages.</p>
             
-            <!-- Test buttons -->
+            <!-- Debug and Test buttons -->
+            <button onclick="debugNodes()" style="margin-top: 10px; padding: 5px 10px; background: #28a745; color: white; border: none; border-radius: 3px; margin-right: 10px;">Debug Nodes</button>
             <button onclick="createTestNodes()" style="margin-top: 10px; padding: 5px 10px; background: #28a745; color: white; border: none; border-radius: 3px;">Create Test Nodes</button>
         </div>
 
@@ -546,15 +547,27 @@
                             
                             var metadataDiv = document.createElement('div');
                             metadataDiv.className = 'metadata';
-                            
-                            var metadataText = '';
-                            if (sequence !== '') {
-                                metadataText += '#' + sequence;
-                            }
+                            // Always show time information if any time values exist or to show structure
+                            var timeText = '';
                             if (investedTime > 0 || elapsedTime > 0) {
-                                if (metadataText) metadataText += ' | ';
-                                metadataText += 'I:' + investedTime + 'h E:' + elapsedTime + 'h';
-                            }
+                                timeText = 'I:' + investedTime + 'h E:' + elapsedTime + 'h';
+                            } else {
+                                // Show placeholder for nodes with no time data
+                                timeText = 'I:0h E:0h';
+                            }                            
+                            metadataText = timeText;
+
+                            // NOT ACTIVE - Build metadata text with sequence and time 
+                            // var metadataText = '';
+                            // if (sequence !== '') {
+                            //     metadataText += '#' + sequence;
+                            // }
+                            
+                            // if (metadataText && timeText) {
+                            //     metadataText += ' - ' + timeText;
+                            // } else if (timeText) {
+                            //     metadataText = timeText;
+                            // }
                             
                             if (metadataText) {
                                 metadataDiv.textContent = metadataText;
@@ -652,39 +665,28 @@
 
             // Wrapper function for button
             function updateSequences() {
-                updateAllSequenceNumbers();
-            }
-            
-            /**
-             * Force sequence test - updates sequences and shows them visually
-             */
-            function forceSequenceTest() {
-                console.log('=== FORCE SEQUENCE TEST ===');
-                if (!jm) {
-                    alert('Mind map not ready');
-                    return;
+                // Update the sequence data
+                var success = updateAllSequenceNumbers();
+                
+                // If sequences are currently visible, refresh the display
+                if (success && showSequences) {
+                    // Force refresh by toggling twice
+                    toggleSequenceDisplay(); // Hide
+                    toggleSequenceDisplay(); // Show again with new data
+                    console.log('✓ Sequence display refreshed');
                 }
                 
-                // First, force update all sequences
-                updateAllSequenceNumbers();
+                // If metadata is currently visible, refresh the display
+                if (success && showMetadata) {
+                    // Force refresh by toggling twice
+                    toggleFullMetadata(); // Hide
+                    toggleFullMetadata(); // Show again with new data
+                    console.log('✓ Metadata display refreshed');
+                }
                 
-                // Then force show sequences
-                setTimeout(function() {
-                    showSequences = false; // Reset state
-                    toggleSequenceDisplay(); // Turn on sequences
-                    
-                    // Also show in console what we should see
-                    console.log('Sequences should now be visible on nodes:');
-                    var allData = jm.get_data();
-                    if (allData && allData.data) {
-                        allData.data.forEach(function(nodeData) {
-                            var node = jm.get_node(nodeData.id);
-                            if (node && node.data && node.data.sequence && node.data.sequence !== '') {
-                                console.log('  - Node "' + node.topic + '" should show sequence: ' + node.data.sequence);
-                            }
-                        });
-                    }
-                }, 200);
+                if (success) {
+                    console.log('✓ Update Sequences completed with UI refresh');
+                }
             }
             
             // ===== END SEQUENCE AND METADATA SYSTEM =====
