@@ -30,13 +30,6 @@
 
 ---
 
-### Feature 2.1: Task Metadata Automation
-
-> As a user I want the sequence to be automatically updated re-arrange nodes, and time units to be automatically converted to the appropriate unit based on the size of it.
-
-- 2.1.1 When a new node is created 
-
----
 
 ### 🔧 Feature 3: Action Plan Export[](https://dev.azure.com/Claudio-Coaching/PEP%20Memory%20Map%20\(basic%20DevOps%20process\)/_wiki/wikis/PEP-Memory-Map.wiki/6/Pilot-Features-and-User-Stories?anchor=%F0%9F%94%A7-feature-3%3A-action-plan-export)
 
@@ -74,9 +67,9 @@
 
 ---
 
-### 🔧 **Feature 6: Smart Sequencing and Time Display Enhancements**
+### 🔧 **Feature 6: Smart Sequencing **
 
-> **As a user**, I want automatic task sequencing, rich time formatting, and toggled metadata display, so that I can reduce manual input and maintain clarity in my mind map-based action plan.
+> **As a user**, I want automatic task sequencing, so that I can reduce manual input and maintain clarity in my mind map-based action plan.
 
 ---
 
@@ -98,7 +91,11 @@
      | # 1.2  I: 2h  E: 3d |
      ```
 
-3. **Smart Time Formatting**
+### 🔧 **Feature 7: Time Display Enhancements**
+
+#### **User Stories**
+
+1. **Smart Time Formatting**
 
    * When entering time values, the system normalizes and converts units:
 
@@ -108,7 +105,7 @@
      * 12 hours → `1.5d`
    * The system always chooses the **most human-readable unit**, with fractions rounded to one decimal place where needed.
 
-4. **Flexible Input Units**
+2. **Flexible Input Units**
 
    * Users can input time using flexible units:
 
