@@ -127,6 +127,7 @@
 2. As a user I can see all nodes in a tabular list - Action Plan - on the screen
 3. As a user I can update the metadata of any node the Action Plan
 4. As a user I can select which nodes of the Action Plan I want to export 
+5. As a user I want a mirror memory-map file exported when I export the Action Plan
 
 ---
 #### 💡 Dev Notes (for Copilot context)

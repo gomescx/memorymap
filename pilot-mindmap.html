@@ -756,7 +756,7 @@
             <!-- Collapsible Sidebar Tab -->
             <div class="sidebar-tab" id="sidebar-tab">
                 <div class="tab-handle" id="tab-handle">
-                    � Action Plan
+                    📋 Action Plan
                 </div>
             </div>
 
@@ -801,7 +801,7 @@
                     
                     <div style="margin-top: 15px; text-align: center;">
                         <button type="button" class="btn" id="refresh-action-plan">🔄 Refresh Table</button>
-                        <button type="button" class="btn btn-secondary" id="save-all-changes">💾 Save All</button>
+                        <button type="button" class="btn btn-secondary" id="save-all-changes">🔄 Refresh Map</button>
                     </div>
                     
                     <div id="validation-warning" style="display: none; color: #dc3545; margin-top: 15px; padding: 10px; background: #f8d7da; border-radius: 4px; font-size: 12px;">
@@ -824,7 +824,10 @@
                                     🔄 Update Sequences
                                 </button>
                                 <button onclick="exportActionPlan()" class="btn btn-export" title="Export all tasks or selected tasks (if any are selected)">
-                                    📈 Export Action Plan
+                                    📋  Export Action Plan
+                                </button>
+                                <button onclick="exportSelectedMindMap()" class="btn btn-export" title="Export memory-map JSON with only selected nodes">
+                                    🗺️ Export Selected Map
                                 </button>
                             </div>
                             
@@ -1631,12 +1634,24 @@
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.className = 'row-select-checkbox';
-                checkbox.checked = data.selected || false; // Default to false if not set
-                checkbox.addEventListener('change', () => {
-                    data.selected = checkbox.checked;
-                    updateSelectionCounter();
-                    updateSelectAllCheckbox();
-                });
+                
+                // Check if this is the main/root node
+                const isRootNode = node.isroot || node.id === 'root';
+                
+                if (isRootNode) {
+                    // Main node is always selected and cannot be deselected
+                    checkbox.checked = true;
+                    checkbox.disabled = true;
+                    checkbox.title = 'Main node is always included in exports';
+                    data.selected = true; // Ensure data reflects this
+                } else {
+                    checkbox.checked = data.selected || false; // Default to false if not set
+                    checkbox.addEventListener('change', () => {
+                        data.selected = checkbox.checked;
+                        updateSelectionCounter();
+                        updateSelectAllCheckbox();
+                    });
+                }
                 selectCell.appendChild(checkbox);
                 
                 // Description cell with indentation based on level
@@ -1841,8 +1856,10 @@
                 
                 if (!selectAllCheckbox || rowCheckboxes.length === 0) return;
                 
-                const checkedCount = Array.from(rowCheckboxes).filter(cb => cb.checked).length;
-                const totalCount = rowCheckboxes.length;
+                // Only count enabled checkboxes (exclude main node)
+                const enabledCheckboxes = Array.from(rowCheckboxes).filter(cb => !cb.disabled);
+                const checkedCount = enabledCheckboxes.filter(cb => cb.checked).length;
+                const totalCount = enabledCheckboxes.length;
                 
                 if (checkedCount === 0) {
                     selectAllCheckbox.checked = false;
@@ -1868,6 +1885,9 @@
                 const shouldSelect = selectAllCheckbox.checked;
                 
                 rowCheckboxes.forEach(checkbox => {
+                    // Skip disabled checkboxes (main node)
+                    if (checkbox.disabled) return;
+                    
                     if (checkbox.checked !== shouldSelect) {
                         checkbox.checked = shouldSelect;
                         // Trigger the change event to update node data
@@ -1875,7 +1895,9 @@
                     }
                 });
                 
-                console.log(`${shouldSelect ? 'Selected' : 'Deselected'} all ${rowCheckboxes.length} rows`);
+                // Count only non-disabled checkboxes for logging
+                const enabledCheckboxes = Array.from(rowCheckboxes).filter(cb => !cb.disabled);
+                console.log(`${shouldSelect ? 'Selected' : 'Deselected'} all ${enabledCheckboxes.length} selectable rows`);
             }
             
             /**
@@ -1966,6 +1988,132 @@
                 } catch (error) {
                     console.error('Error downloading mind map:', error);
                     alert('Error saving mind map: ' + error.message);
+                }
+            }
+            
+            /**
+             * Feature 8 US 5: Export memory-map JSON with only selected nodes
+             */
+            function exportSelectedMindMap() {
+                console.log('=== EXPORTING SELECTED MIND MAP ===');
+                
+                if (!jm) {
+                    console.error('Mind map not initialized');
+                    alert('Mind map is not ready yet. Please wait a moment and try again.');
+                    return;
+                }
+                
+                try {
+                    // Get selected nodes
+                    var selectedNodes = getSelectedNodes();
+                    
+                    if (selectedNodes.length === 0) {
+                        alert('No nodes selected. Please select at least one node from the Action Plan table.');
+                        return;
+                    }
+                    
+                    console.log('Exporting', selectedNodes.length, 'selected nodes');
+                    
+                    // Create a set of selected node IDs for quick lookup
+                    var selectedNodeIds = new Set(selectedNodes.map(node => node.id));
+                    
+                    // Get the full mind map data
+                    var fullMindData = jm.get_data('node_array');
+                    
+                    if (!fullMindData || !fullMindData.data || !Array.isArray(fullMindData.data)) {
+                        console.error('Failed to get mind map data');
+                        alert('Failed to get mind map data. Please try again.');
+                        return;
+                    }
+                    
+                    // Filter the data to include only selected nodes
+                    var filteredData = fullMindData.data.filter(nodeData => 
+                        selectedNodeIds.has(nodeData.id)
+                    );
+                    
+                    // Fix parent references - reparent orphaned nodes to root
+                    console.log('Fixing parent references for filtered nodes...');
+                    var reparentedCount = 0;
+                    
+                    filteredData.forEach(function(nodeData) {
+                        // Skip the root node itself
+                        if (nodeData.isroot || nodeData.id === 'root') {
+                            return;
+                        }
+                        
+                        // Check if this node's parent exists in the filtered data
+                        var parentExists = selectedNodeIds.has(nodeData.parentid);
+                        
+                        if (!parentExists) {
+                            console.log('Reparenting orphaned node:', nodeData.topic, '(parent', nodeData.parentid, 'not in selection)');
+                            
+                            // Reparent to root
+                            nodeData.parentid = 'root';
+                            
+                            // Ensure it has a direction (required for root children)
+                            if (!nodeData.direction) {
+                                // Assign direction based on original sequence or default to 'right'
+                                nodeData.direction = 'right';
+                            }
+                            
+                            reparentedCount++;
+                        }
+                    });
+                    
+                    if (reparentedCount > 0) {
+                        console.log('✓ Reparented', reparentedCount, 'orphaned nodes to root');
+                    }
+                    
+                    // Create the filtered mind map structure
+                    var filteredMindData = {
+                        meta: {
+                            ...fullMindData.meta,
+                            export_date: new Date().toISOString(),
+                            application: 'PEP Memory Map',
+                            version: '1.0',
+                            export_type: 'selected_nodes',
+                            selected_count: filteredData.length,
+                            total_count: fullMindData.data.length,
+                            reparented_nodes: reparentedCount
+                        },
+                        format: fullMindData.format,
+                        data: filteredData
+                    };
+                    
+                    // Convert to JSON string
+                    var jsonString = JSON.stringify(filteredMindData, null, 2);
+                    
+                    // Create filename with timestamp
+                    var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                    var filename = 'pep-memory-map-selected-' + timestamp + '.json';
+                    
+                    // Create and trigger download
+                    var blob = new Blob([jsonString], { type: 'application/json' });
+                    var url = URL.createObjectURL(blob);
+                    
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.style.display = 'none';
+                    
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    URL.revokeObjectURL(url);
+                    
+                    console.log('✓ Selected mind map exported successfully as:', filename);
+                    
+                    // Show success feedback
+                    var message = `Selected mind map exported successfully! (${filteredData.length} nodes)`;
+                    if (reparentedCount > 0) {
+                        message += ` - ${reparentedCount} orphaned nodes reparented to root.`;
+                    }
+                    showNotification(message, 'success');
+                    
+                } catch (error) {
+                    console.error('Error exporting selected mind map:', error);
+                    alert('Error exporting selected mind map: ' + error.message);
                 }
             }
             
