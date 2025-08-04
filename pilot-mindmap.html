@@ -925,6 +925,28 @@
             // ===== UTILITY FUNCTIONS =====
             
             /**
+             * Get a sanitized version of the root node name for use in filenames
+             */
+            function getRootNodeNameForFilename() {
+                if (!jm) {
+                    return '';
+                }
+                
+                var rootNode = jm.get_node('root');
+                if (!rootNode || !rootNode.topic) {
+                    return '';
+                }
+                
+                // Sanitize the root node name for filename use
+                var rootName = rootNode.topic
+                    .replace(/[<>:"/\\|?*\x00-\x1f]/g, '') // Remove invalid filename characters
+                    .replace(/\s+/g, '-') // Replace spaces with hyphens
+                    .substring(0, 50); // Limit length to avoid overly long filenames
+                
+                return rootName ? '-' + rootName : '';
+            }
+            
+            /**
              * Format date according to local preferences (defaults to Australian dd-mmm format)
              */
             function formatDateForDisplay(dateString, prefix = '') {
@@ -1974,9 +1996,10 @@
                     // Convert to JSON string
                     var jsonString = JSON.stringify(mindData, null, 2);
                     
-                    // Create filename with timestamp
+                    // Create filename with timestamp and root node name
                     var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-                    var filename = 'pep-memory-map-' + timestamp + '.json';
+                    var rootNameSuffix = getRootNodeNameForFilename();
+                    var filename = 'pep-memory-map' + rootNameSuffix + '-' + timestamp + '.json';
                     
                     // Create and trigger download
                     var blob = new Blob([jsonString], { type: 'application/json' });
@@ -2096,9 +2119,10 @@
                     // Convert to JSON string
                     var jsonString = JSON.stringify(filteredMindData, null, 2);
                     
-                    // Create filename with timestamp
+                    // Create filename with timestamp and root node name
                     var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-                    var filename = 'pep-memory-map-selected-' + timestamp + '.json';
+                    var rootNameSuffix = getRootNodeNameForFilename();
+                    var filename = 'pep-memory-map' + rootNameSuffix + '-selected-' + timestamp + '.json';
                     
                     // Create and trigger download
                     var blob = new Blob([jsonString], { type: 'application/json' });
@@ -2383,9 +2407,10 @@
                         }).join(',');
                     }).join('\n');
                     
-                    // Create filename with timestamp
+                    // Create filename with timestamp and root node name
                     var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-                    var filename = 'pep-action-plan-' + timestamp + '.csv';
+                    var rootNameSuffix = getRootNodeNameForFilename();
+                    var filename = 'pep-action-plan' + rootNameSuffix + '-' + timestamp + '.csv';
                     
                     // Create and trigger download
                     var blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
