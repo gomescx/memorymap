@@ -804,6 +804,20 @@
                         <button type="button" class="btn btn-secondary" id="save-all-changes">🔄 Refresh Map</button>
                     </div>
                     
+                    <!-- Export Actions Section -->
+                    <div style="margin-top: 20px; border-top: 1px solid #dee2e6; padding-top: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #495057; font-size: 14px; text-align: center; font-weight: 600;">📤 Export Actions</h4>
+                        <div style="text-align: center;">
+                            <button onclick="exportActionPlan()" class="btn btn-export" title="Export all tasks or selected tasks (if any are selected)">
+                                📋 Action Plan (CSV)
+                            </button>
+                            <button onclick="exportSelectedMindMap()" class="btn btn-export" title="Export memory-map JSON with only selected nodes">
+                                🗺️ Memory Map (JSON)
+                            </button>
+                            <p class="help-text">Exports only selected tasks</p>
+                        </div>
+                    </div>
+                    
                     <div id="validation-warning" style="display: none; color: #dc3545; margin-top: 15px; padding: 10px; background: #f8d7da; border-radius: 4px; font-size: 12px;">
                         ⚠️ Warning: Some tasks have invested time greater than elapsed time!
                     </div>
@@ -823,21 +837,15 @@
                                 <button onclick="updateSequences()" class="btn btn-primary">
                                     🔄 Update Sequences
                                 </button>
-                                <button onclick="exportActionPlan()" class="btn btn-export" title="Export all tasks or selected tasks (if any are selected)">
-                                    📋  Export Action Plan
-                                </button>
-                                <button onclick="exportSelectedMindMap()" class="btn btn-export" title="Export memory-map JSON with only selected nodes">
-                                    🗺️ Export Selected Map
-                                </button>
                             </div>
                             
                             <div class="action-group">
                                 <h3>💾 Data Management</h3>
                                 <button onclick="downloadMindMap()" class="btn btn-success">
-                                    📥 Save Mind Map
+                                    📥 Save Memory Map
                                 </button>
                                 <button onclick="document.getElementById('file-input').click()" class="btn btn-info">
-                                    📤 Load Mind Map
+                                    📤 Load Memory Map
                                 </button>
                                 <button onclick="createSampleMap()" class="btn btn-sample">
                                     🌟 Sample Map
@@ -849,7 +857,7 @@
                         <!-- Settings Panel (Collapsible) -->
                         <div class="settings-panel">
                             <button class="settings-toggle" onclick="toggleSettings()">
-                                ⚙️ View & Export Options <span id="settings-arrow">▼</span>
+                                ⚙️ View Options <span id="settings-arrow">▼</span>
                             </button>
                             
                             <div id="settings-content" class="settings-content">
@@ -864,15 +872,6 @@
                                             <input type="checkbox" id="show-dates-times" onchange="toggleFullMetadata()">
                                             <span>Show Invested Elapsed Time and Dates</span>
                                         </label>
-                                    </div>
-                                    
-                                    <div class="setting-group">
-                                        <h4>📊 Export Options</h4>
-                                        <label class="checkbox-label">
-                                            <input type="checkbox" id="export-leaves-only">
-                                            <span>Export only end tasks (leaf nodes)</span>
-                                        </label>
-                                        <p class="help-text">Export only actionable tasks, skip categories</p>
                                     </div>
                                 </div>
                             </div>
@@ -895,7 +894,7 @@
                                         <span>Create child</span>
                                     </div>
                                     <div class="shortcut-item">
-                                        <kbd>F2</kbd>
+                                        <kbd>Double-Click</kbd>
                                         <span>Edit node</span>
                                     </div>
                                     <div class="shortcut-item">
@@ -1534,6 +1533,20 @@
                 allNodes.forEach(nodeInfo => {
                     const row = createActionPlanRow(nodeInfo.node, nodeInfo.level);
                     tbody.appendChild(row);
+                });
+                
+                // Auto-select all rows when table is first created
+                allNodes.forEach(nodeInfo => {
+                    const data = initNodeData(nodeInfo.node);
+                    data.selected = true; // Select all nodes by default
+                });
+                
+                // Update checkboxes to reflect the selected state
+                const rowCheckboxes = document.querySelectorAll('.row-select-checkbox');
+                rowCheckboxes.forEach(checkbox => {
+                    if (!checkbox.disabled) { // Don't modify disabled checkboxes (root node)
+                        checkbox.checked = true;
+                    }
                 });
                 
                 // Set up select all checkbox event listener (only once)
@@ -2280,10 +2293,6 @@
                     
                     console.log('Processing', mindData.data.length, 'nodes for action plan export');
                     
-                    // Check if user wants only leaf nodes
-                    var exportLeavesOnly = document.getElementById('export-leaves-only').checked;
-                    console.log('Export leaves only:', exportLeavesOnly);
-                    
                     // Create a set of selected node IDs for quick lookup
                     var selectedNodeIds = new Set();
                     if (exportOnlySelected) {
@@ -2315,12 +2324,6 @@
                         var liveNode = jm.get_node(nodeData.id);
                         if (!liveNode) {
                             console.warn('Could not find live node for:', nodeData.id);
-                            return;
-                        }
-                        
-                        // If export leaves only is enabled, skip nodes that have children
-                        if (exportLeavesOnly && liveNode.children && liveNode.children.length > 0) {
-                            console.log('Skipping non-leaf node:', nodeData.topic, '(has', liveNode.children.length, 'children)');
                             return;
                         }
                         
@@ -2400,13 +2403,10 @@
                     URL.revokeObjectURL(url);
                     
                     console.log('✓ Action plan exported successfully as:', filename);
-                    console.log('✓ Exported', exportedNodeCount, 'nodes' + (exportLeavesOnly ? ' (leaf nodes only)' : ''));
+                    console.log('✓ Exported', exportedNodeCount, 'nodes');
                     
                     // Show success feedback
                     var message = 'Action plan exported successfully! (' + exportedNodeCount + ' nodes)';
-                    if (exportLeavesOnly) {
-                        message = 'Leaf nodes exported successfully! (' + exportedNodeCount + ' end tasks)';
-                    }
                     if (hasValidationWarnings) {
                         message += ' (with validation warnings)';
                     }
