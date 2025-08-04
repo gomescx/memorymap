@@ -602,6 +602,11 @@
                                 <input type="number" id="elapsed-time" min="0" step="0.25" placeholder="e.g., 3.0">
                             </div>
                             
+                            <div class="form-group">
+                                <label for="start-date">Start Date:</label>
+                                <input type="date" id="start-date" placeholder="Select start date...">
+                            </div>
+                            
                             <div style="margin-top: 20px;">
                                 <button type="button" class="btn" id="save-metadata">Save Changes</button>
                                 <button type="button" class="btn btn-secondary" id="reset-metadata">Reset</button>
@@ -795,26 +800,25 @@
                             jm.add_node('dev1', 'dev1_1', 'UI Design');
                             jm.add_node('dev1', 'dev1_2', 'Component Development');
                             
-                            // Add some sample metadata to nodes
-                            setTimeout(function() {
-                                var nodes = [
-                                    { id: 'plan1', invested: 4, elapsed: 5 },
-                                    { id: 'plan2', invested: 6, elapsed: 8 },
-                                    { id: 'dev1', invested: 12, elapsed: 15 },
-                                    { id: 'dev2', invested: 16, elapsed: 20 },
-                                    { id: 'test1', invested: 3, elapsed: 4 }
-                                ];
-                                
-                                nodes.forEach(function(nodeInfo) {
-                                    var node = jm.get_node(nodeInfo.id);
-                                    if (node) {
-                                        var data = initNodeData(node);
-                                        data.invested_time = nodeInfo.invested;
-                                        data.elapsed_time = nodeInfo.elapsed;
-                                    }
-                                });
-                                
-                                // Force update sequences after all nodes are created
+                                // Add some sample metadata to nodes
+                                setTimeout(function() {
+                                    var nodes = [
+                                        { id: 'plan1', invested: 4, elapsed: 5, startDate: '2025-08-05' },
+                                        { id: 'plan2', invested: 6, elapsed: 8, startDate: '2025-08-10' },
+                                        { id: 'dev1', invested: 12, elapsed: 15, startDate: '2025-08-15' },
+                                        { id: 'dev2', invested: 16, elapsed: 20, startDate: '2025-08-20' },
+                                        { id: 'test1', invested: 3, elapsed: 4, startDate: '2025-09-01' }
+                                    ];
+                                    
+                                    nodes.forEach(function(nodeInfo) {
+                                        var node = jm.get_node(nodeInfo.id);
+                                        if (node) {
+                                            var data = initNodeData(node);
+                                            data.invested_time = nodeInfo.invested;
+                                            data.elapsed_time = nodeInfo.elapsed;
+                                            data.start_date = nodeInfo.startDate;
+                                        }
+                                    });                                // Force update sequences after all nodes are created
                                 updateAllSequenceNumbers();
                                 
                                 // Select root node
@@ -849,6 +853,9 @@
                 }
                 if (typeof node.data.elapsed_time === 'undefined') {
                     node.data.elapsed_time = 0;
+                }
+                if (typeof node.data.start_date === 'undefined') {
+                    node.data.start_date = '';
                 }
                 return node.data;
             }
@@ -1037,19 +1044,36 @@
                             var sequence = data.sequence || '';
                             var investedTime = data.invested_time || 0;
                             var elapsedTime = data.elapsed_time || 0;
+                            var startDate = data.start_date || '';
                             
                             var metadataDiv = document.createElement('div');
                             metadataDiv.className = 'metadata';
-                            // Always show time information if any time values exist or to show structure
+                            
+                            // Build metadata text with times and start date
                             var timeText = '';
                             if (investedTime > 0 || elapsedTime > 0) {
                                 timeText = 'I:' + investedTime + 'h E:' + elapsedTime + 'h';
                             } else {
                                 // Show placeholder for nodes with no time data
                                 timeText = 'I:0h E:0h';
-                            }                            
-                            metadataText = timeText;
-
+                            }
+                            
+                            // Add start date if available
+                            var dateText = '';
+                            if (startDate) {
+                                // Format date to be more readable (e.g., 2025-08-05 → Aug 5)
+                                var dateObj = new Date(startDate);
+                                var month = dateObj.toLocaleDateString('en-US', { month: 'short' });
+                                var day = dateObj.getDate();
+                                dateText = 'Start:' + month + ' ' + day;
+                            }
+                            
+                            // Combine time and date information
+                            var metadataText = timeText;
+                            if (dateText) {
+                                metadataText += ' | ' + dateText;
+                            }
+                            
                             // NOT ACTIVE - Build metadata text with sequence and time 
                             // var metadataText = '';
                             // if (sequence !== '') {
@@ -1313,6 +1337,7 @@
                 document.getElementById('node-sequence').value = data.sequence || '';
                 document.getElementById('invested-time').value = data.invested_time || '';
                 document.getElementById('elapsed-time').value = data.elapsed_time || '';
+                document.getElementById('start-date').value = data.start_date || '';
                 
                 // Clear any validation warning
                 document.getElementById('validation-warning').style.display = 'none';
@@ -1351,6 +1376,7 @@
                 // Only save user-editable fields (not sequence, which is auto-calculated)
                 var investedTime = parseFloat(document.getElementById('invested-time').value) || 0;
                 var elapsedTime = parseFloat(document.getElementById('elapsed-time').value) || 0;
+                var startDate = document.getElementById('start-date').value || '';
                 
                 // Validate invested time vs elapsed time
                 if (investedTime > elapsedTime && elapsedTime > 0) {
@@ -1364,11 +1390,13 @@
                 var data = initNodeData(selected);
                 data.invested_time = investedTime;
                 data.elapsed_time = elapsedTime;
+                data.start_date = startDate;
                 
                 console.log('Saved metadata for node:', selected.topic, {
                     sequence: data.sequence, // Keep existing sequence
                     invested_time: investedTime,
-                    elapsed_time: elapsedTime
+                    elapsed_time: elapsedTime,
+                    start_date: startDate
                 });
                 
                 // Run the same functionality as Update Sequences to update all nodes
@@ -1394,6 +1422,7 @@
                 document.getElementById('node-sequence').value = data.sequence || '';
                 document.getElementById('invested-time').value = data.invested_time || '';
                 document.getElementById('elapsed-time').value = data.elapsed_time || '';
+                document.getElementById('start-date').value = data.start_date || '';
                 
                 // Clear validation warning
                 document.getElementById('validation-warning').style.display = 'none';
@@ -1646,7 +1675,7 @@
                     var exportedNodeCount = 0;
                     
                     // CSV Headers
-                    csvData.push(['Task Description', 'Sequence', 'Invested Time', 'Elapsed Time', 'Path', 'Validation Notes']);
+                    csvData.push(['Task Description', 'Sequence', 'Invested Time', 'Elapsed Time', 'Start Date', 'Path', 'Validation Notes']);
                     
                     // Process each node
                     mindData.data.forEach(function(nodeData) {
@@ -1694,6 +1723,7 @@
                             nodeMetadata.sequence || '',
                             nodeMetadata.invested_time || '',
                             nodeMetadata.elapsed_time || '',
+                            nodeMetadata.start_date || '',
                             path,
                             validationNotes
                         ]);

@@ -71,7 +71,7 @@
 
 > **As a user**, I want automatic task sequencing, so that I can reduce manual input and maintain clarity in my mind map-based action plan.
 
----
+
 
 #### **User Stories**
 
@@ -120,6 +120,15 @@
 
 ---
 
+### 🔧 Feature 8: Visual Action Plan Editing
+
+#### User Stories
+1. As a user I can enter the Start Date for each node
+2. As a user I can see all nodes in a tabular list - Action Plan - on the screen
+3. As a user I can update the metadata of any node the Action Plan
+4. As a user I can select which nodes of the Action Plan I want to export 
+
+---
 #### 💡 Dev Notes (for Copilot context)
 
 * Time should be stored in a **single base unit internally (e.g., minutes or hours)** and formatted for display.
