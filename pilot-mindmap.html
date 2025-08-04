@@ -216,7 +216,7 @@
             }
 
             .sidebar-tab.expanded {
-                left: 320px; /* Width of expanded sidebar */
+                left: min(50vw, 600px); /* Dynamic positioning based on sidebar width */
             }
 
             .tab-handle {
@@ -243,14 +243,14 @@
 
             .sidebar-panel {
                 position: fixed;
-                left: -320px;
+                left: calc(-1 * min(50vw, 600px)); /* Dynamic left positioning */
                 top: 0;
-                width: 320px;
+                width: min(50vw, 600px); /* Responsive width - max 50% of viewport, cap at 600px */
                 height: 100vh;
                 background: white;
                 border-right: 2px solid #ddd;
                 box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-                transition: left 0.3s ease;
+                transition: left 0.3s ease, width 0.3s ease;
                 overflow-y: auto;
                 padding: 20px;
                 box-sizing: border-box;
@@ -288,7 +288,190 @@
             }
 
             .main-content.sidebar-pinned {
-                margin-left: 320px;
+                margin-left: min(50vw, 600px); /* Dynamic margin based on sidebar width */
+            }
+
+            /* Action Plan Table Styles */
+            .action-plan-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 12px;
+                margin-top: 15px;
+                table-layout: fixed; /* Fixed layout for better column control */
+            }
+
+            .action-plan-table th,
+            .action-plan-table td {
+                border: 1px solid #ddd;
+                padding: 6px 8px;
+                text-align: left;
+                vertical-align: top;
+                overflow: hidden;
+            }
+
+            .action-plan-table th {
+                background-color: #f8f9fa;
+                font-weight: bold;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+
+            .action-plan-table td {
+                background-color: white;
+            }
+
+            /* Responsive column widths */
+            .action-plan-table .description-col {
+                width: 45%; /* Flexible width for descriptions */
+                min-width: 150px;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                position: relative;
+            }
+
+            .action-plan-table .description-col input {
+                display: block;
+                width: calc(100% - 8px); /* Account for padding */
+            }
+
+            .action-plan-table .sequence-col {
+                width: 10%;
+                min-width: 40px;
+                text-align: center;
+                font-family: monospace;
+                font-size: 11px;
+            }
+
+            .action-plan-table .time-col {
+                width: 15%;
+                min-width: 60px;
+                text-align: center;
+            }
+
+            .action-plan-table .date-col {
+                width: 15%;
+                min-width: 80px;
+                text-align: center;
+            }
+
+            .action-plan-table input[type="text"],
+            .action-plan-table input[type="number"],
+            .action-plan-table input[type="date"] {
+                width: 100%;
+                border: none;
+                background: transparent;
+                padding: 2px 4px;
+                font-size: 11px;
+                box-sizing: border-box;
+                resize: none;
+                overflow: visible;
+            }
+
+            .action-plan-table input[type="text"] {
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                min-height: 20px;
+            }
+
+            .action-plan-table input[type="text"]:focus {
+                background: #fff3cd;
+                outline: 1px solid #007bff;
+                white-space: normal; /* Allow wrapping when focused */
+                height: auto;
+            }
+
+            .action-plan-table input[type="number"]:focus,
+            .action-plan-table input[type="date"]:focus {
+                background: #fff3cd;
+                outline: 1px solid #007bff;
+            }
+
+            .action-plan-table .node-level-0 { padding-left: 8px; font-weight: bold; }
+            .action-plan-table .node-level-1 { padding-left: 20px; }
+            .action-plan-table .node-level-2 { padding-left: 32px; }
+            .action-plan-table .node-level-3 { padding-left: 44px; }
+            .action-plan-table .node-level-4 { padding-left: 56px; }
+
+            .table-container {
+                max-height: calc(100vh - 150px);
+                overflow-y: auto;
+                overflow-x: auto; /* Allow horizontal scrolling if needed */
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                width: 100%;
+            }
+
+            /* Totals row styling */
+            .action-plan-table tfoot {
+                position: sticky;
+                bottom: 0;
+                background: white;
+                z-index: 5;
+            }
+
+            .action-plan-table .totals-row {
+                background-color: #f8f9fa !important;
+                border-top: 2px solid #007bff;
+                font-weight: bold;
+                color: #495057;
+            }
+
+            .action-plan-table .totals-row td {
+                padding: 8px;
+                text-align: center;
+                font-size: 12px;
+                border-top: 2px solid #007bff;
+            }
+
+            .action-plan-table .totals-row .description-col {
+                text-align: left;
+                font-weight: bold;
+                color: #007bff;
+            }
+
+            /* Responsive adjustments for smaller sidebar widths */
+            @media (max-width: 1200px) {
+                .action-plan-table .description-col {
+                    width: 40%;
+                    min-width: 120px;
+                }
+                
+                .action-plan-table .sequence-col {
+                    width: 12%;
+                }
+                
+                .action-plan-table .time-col {
+                    width: 16%;
+                }
+                
+                .action-plan-table .date-col {
+                    width: 16%;
+                }
+            }
+
+            @media (max-width: 800px) {
+                .sidebar-panel {
+                    width: 60vw; /* Slightly larger on mobile */
+                    left: -60vw;
+                }
+                
+                .sidebar-tab.expanded {
+                    left: 60vw;
+                }
+                
+                .main-content.sidebar-pinned {
+                    margin-left: 60vw;
+                }
+                
+                .action-plan-table {
+                    font-size: 11px;
+                }
+                
+                .action-plan-table .description-col {
+                    width: 35%;
+                    min-width: 100px;
+                }
             }
 
             /* New Control Panel Styles */
@@ -549,7 +732,7 @@
             <!-- Collapsible Sidebar Tab -->
             <div class="sidebar-tab" id="sidebar-tab">
                 <div class="tab-handle" id="tab-handle">
-                    📊 Edit Mode
+                    � Action Plan
                 </div>
             </div>
 
@@ -557,65 +740,42 @@
             <div class="sidebar-panel" id="sidebar-panel">
                 <button class="pin-button" id="pin-button" title="Pin sidebar">📌</button>
                 
-                <h3>📊 Task Metadata</h3>
-                
-                <!-- Edit Mode Toggle -->
-                <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;">
-                    <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal; margin: 0;">
-                        <input type="checkbox" id="edit-mode-toggle" style="margin-right: 10px; cursor: pointer;">
-                        <span id="edit-mode-label">Edit Mode Off</span>
-                    </label>
-                    <div style="font-size: 12px; color: #666; margin-top: 5px; margin-left: 22px;">
-                        Enable to edit node metadata without keyboard shortcuts interfering
-                    </div>
-                </div>
+                <h3>📋 Action Plan</h3>
 
-                <div id="metadata-content" style="display: none;">
-                    <div id="no-selection" class="no-selection">
-                        Select a node to view and edit its metadata.
+                <div id="action-plan-content">
+                    <div class="table-container">
+                        <table class="action-plan-table" id="action-plan-table">
+                            <thead>
+                                <tr>
+                                    <th class="description-col">Description</th>
+                                    <th class="sequence-col">#</th>
+                                    <th class="time-col">Invested (hrs)</th>
+                                    <th class="time-col">Elapsed (hrs)</th>
+                                    <th class="date-col">Start Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="action-plan-tbody">
+                                <!-- Table rows will be dynamically generated -->
+                            </tbody>
+                            <tfoot>
+                                <tr id="action-plan-totals" class="totals-row">
+                                    <td class="description-col"><strong>TOTALS</strong></td>
+                                    <td class="sequence-col" id="total-count">0</td>
+                                    <td class="time-col" id="total-invested">0.0</td>
+                                    <td class="time-col" id="total-elapsed">0.0</td>
+                                    <td class="date-col" id="max-start-date">-</td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                     
-                    <div id="metadata-editor" style="display: none;">
-                        <div class="node-info">
-                            <h4 id="selected-node-title">Node Title</h4>
-                            <div id="selected-node-path" class="node-path">Path will appear here</div>
-                        </div>
-                        
-                        <form class="metadata-form" id="metadata-form">
-                            <div class="form-group">
-                                <label for="node-name">Node Name:</label>
-                                <input type="text" id="node-name" placeholder="Enter node name...">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="node-sequence">Sequence Number (Auto-calculated):</label>
-                                <input type="text" id="node-sequence" readonly style="background-color: #f8f9fa; cursor: not-allowed;" placeholder="Automatically assigned...">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="invested-time">Invested Time (hours):</label>
-                                <input type="number" id="invested-time" min="0" step="0.25" placeholder="e.g., 2.5">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="elapsed-time">Elapsed Time (hours):</label>
-                                <input type="number" id="elapsed-time" min="0" step="0.25" placeholder="e.g., 3.0">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="start-date">Start Date:</label>
-                                <input type="date" id="start-date" placeholder="Select start date...">
-                            </div>
-                            
-                            <div style="margin-top: 20px;">
-                                <button type="button" class="btn" id="save-metadata">Save Changes</button>
-                                <button type="button" class="btn btn-secondary" id="reset-metadata">Reset</button>
-                            </div>
-                        </form>
-                        
-                        <div id="validation-warning" style="display: none; color: #dc3545; margin-top: 15px; padding: 10px; background: #f8d7da; border-radius: 4px; font-size: 14px;">
-                            ⚠️ Warning: Invested time cannot be greater than elapsed time!
-                        </div>
+                    <div style="margin-top: 15px; text-align: center;">
+                        <button type="button" class="btn" id="refresh-action-plan">🔄 Refresh Table</button>
+                        <button type="button" class="btn btn-secondary" id="save-all-changes">💾 Save All</button>
+                    </div>
+                    
+                    <div id="validation-warning" style="display: none; color: #dc3545; margin-top: 15px; padding: 10px; background: #f8d7da; border-radius: 4px; font-size: 12px;">
+                        ⚠️ Warning: Some tasks have invested time greater than elapsed time!
                     </div>
                 </div>
             </div>
@@ -669,7 +829,7 @@
                                         </label>
                                         <label class="checkbox-label">
                                             <input type="checkbox" id="show-dates-times" onchange="toggleFullMetadata()">
-                                            <span>Show Time Metadata</span>
+                                            <span>Show Invested Elapsed Time and Dates</span>
                                         </label>
                                     </div>
                                     
@@ -729,6 +889,41 @@
             var showSequences = false;
             var showMetadata = false;
             var jm; // Global reference to jsMind instance
+            
+            // ===== UTILITY FUNCTIONS =====
+            
+            /**
+             * Format date according to local preferences (defaults to Australian dd-mmm format)
+             */
+            function formatDateForDisplay(dateString, prefix = '') {
+                if (!dateString) return '';
+                
+                var dateObj = new Date(dateString);
+                
+                // Try to detect user's locale and regional preferences
+                var userLocale = navigator.language || navigator.userLanguage || 'en-AU';
+                
+                // Detect if user is likely in Australia or prefers Australian/International format
+                var isAustralian = userLocale.includes('AU') || userLocale.includes('au') || 
+                                 userLocale.includes('en-GB') || // UK also uses dd-mmm
+                                 (typeof Intl !== 'undefined' && 
+                                  Intl.DateTimeFormat().resolvedOptions().timeZone.includes('Australia'));
+                
+                // Default to Australian/International format unless clearly US/CA format preferred
+                var useAustralianFormat = isAustralian || (!userLocale.includes('US') && !userLocale.includes('CA'));
+                
+                var day = dateObj.getDate();
+                var month = dateObj.toLocaleDateString('en', { month: 'short' });
+                
+                // Format based on regional preference
+                var formattedDate = useAustralianFormat ? 
+                    day + ' ' + month : 
+                    month + ' ' + day;
+                
+                return prefix ? prefix + formattedDate : formattedDate;
+            }
+            
+            // ===== END UTILITY FUNCTIONS =====
             
             // ===== SAMPLE MAP CREATION =====
             
@@ -823,7 +1018,8 @@
                                 
                                 // Select root node
                                 jm.select_node('root');
-                                updateMetadataSidebar(jm);
+                                // Update Action Plan table
+                                updateActionPlanTable();
                                 
                                 console.log('✓ Sample mind map created successfully!');
                                 showNotification('Sample mind map created! Try the display options and explore the nodes.', 'success');
@@ -911,10 +1107,8 @@
                     
                     console.log('✓ Sequence update completed successfully');
                     
-                    // Update sidebar if a node is selected
-                    if (currentSelectedNode) {
-                        updateMetadataSidebar(jm);
-                    }
+                    // Update Action Plan table
+                    updateActionPlanTable();
                     
                     return true;
                     
@@ -1061,11 +1255,7 @@
                             // Add start date if available
                             var dateText = '';
                             if (startDate) {
-                                // Format date to be more readable (e.g., 2025-08-05 → Aug 5)
-                                var dateObj = new Date(startDate);
-                                var month = dateObj.toLocaleDateString('en-US', { month: 'short' });
-                                var day = dateObj.getDate();
-                                dateText = 'Start:' + month + ' ' + day;
+                                dateText = formatDateForDisplay(startDate, 'Start:');
                             }
                             
                             // Combine time and date information
@@ -1179,12 +1369,10 @@
                 const tabHandle = document.getElementById('tab-handle');
                 const pinButton = document.getElementById('pin-button');
                 const mainContent = document.getElementById('main-content');
-                const editModeToggle = document.getElementById('edit-mode-toggle');
-                const metadataContent = document.getElementById('metadata-content');
+                const actionPlanContent = document.getElementById('action-plan-content');
                 
-                // Ensure edit mode is unchecked by default
-                editModeToggle.checked = false;
-                metadataContent.style.display = 'none';
+                // Initialize Action Plan table on load
+                updateActionPlanTable();
                 
                 let isExpanded = false;
                 let isPinned = false;
@@ -1233,34 +1421,13 @@
                     }
                 });
 
-                // Edit mode toggle
-                editModeToggle.addEventListener('change', function() {
-                    const isEditMode = this.checked;
-                    const label = document.getElementById('edit-mode-label');
-                    
-                    if (isEditMode) {
-                        metadataContent.style.display = 'block';
-                        label.textContent = 'Edit Mode On';
-                        tabHandle.style.background = '#28a745'; // Green when active
-                        
-                        // Also check the Show Sequence Numbers and Show Dates and Times checkboxes
-                        const showSequencesCheckbox = document.getElementById('show-sequences');
-                        const showDatesTimesCheckbox = document.getElementById('show-dates-times');
-                        
-                        if (showSequencesCheckbox && !showSequencesCheckbox.checked) {
-                            showSequencesCheckbox.checked = true;
-                            toggleSequenceDisplay(); // Trigger the display update
-                        }
-                        
-                        if (showDatesTimesCheckbox && !showDatesTimesCheckbox.checked) {
-                            showDatesTimesCheckbox.checked = true;
-                            toggleFullMetadata(); // Trigger the display update
-                        }
-                    } else {
-                        metadataContent.style.display = 'none';
-                        label.textContent = 'Edit Mode Off';
-                        tabHandle.style.background = '#0078d4'; // Blue default
-                    }
+                // Add event listeners for Action Plan buttons
+                document.getElementById('refresh-action-plan').addEventListener('click', function() {
+                    updateActionPlanTable();
+                });
+
+                document.getElementById('save-all-changes').addEventListener('click', function() {
+                    saveAllActionPlanChanges();
                 });
 
                 function expandSidebar() {
@@ -1278,28 +1445,15 @@
                 }
             }
             
-            function setupMetadataHandling(jm) {
-                // Handle node selection changes
+            function setupActionPlanHandling(jm) {
+                // Handle node selection changes to refresh table
                 jm.add_event_listener(function(type, data) {
                     if (type === 'select_node') {
                         currentSelectedNode = data.node;
-                        updateMetadataSidebar(jm);
+                        // Always refresh table
+                        updateActionPlanTable();
                     }
                 });
-
-                // Handle save button
-                document.getElementById('save-metadata').addEventListener('click', function() {
-                    saveNodeMetadata(jm);
-                });
-                
-                // Handle reset button
-                document.getElementById('reset-metadata').addEventListener('click', function() {
-                    resetMetadataForm(jm);
-                });
-                
-                // Auto-validate when invested/elapsed time changes
-                document.getElementById('invested-time').addEventListener('input', validateTimes);
-                document.getElementById('elapsed-time').addEventListener('input', validateTimes);
                 
                 // Also handle clicks on the mindmap container
                 document.getElementById('jsmind_container').addEventListener('click', function(e) {
@@ -1307,141 +1461,293 @@
                         var selected = jm.get_selected_node();
                         if (selected && selected !== currentSelectedNode) {
                             currentSelectedNode = selected;
-                            updateMetadataSidebar(jm);
+                            // Always refresh table
+                            updateActionPlanTable();
                         }
                     }, 10);
                 });
             }
             
-            function updateMetadataSidebar(jm) {
-                var selected = jm.get_selected_node();
-                var noSelectionDiv = document.getElementById('no-selection');
-                var editorDiv = document.getElementById('metadata-editor');
-                
-                if (!selected) {
-                    noSelectionDiv.style.display = 'block';
-                    editorDiv.style.display = 'none';
+            function updateActionPlanTable() {
+                if (!jm) {
+                    console.log('Mind map not initialized yet');
                     return;
                 }
                 
-                noSelectionDiv.style.display = 'none';
-                editorDiv.style.display = 'block';
-                
-                // Update node info
-                document.getElementById('selected-node-title').textContent = selected.topic;
-                document.getElementById('selected-node-path').textContent = getNodePath(jm, selected);
-                
-                // Update form fields with current data using the new data initialization
-                var data = initNodeData(selected);
-                document.getElementById('node-name').value = selected.topic || '';
-                document.getElementById('node-sequence').value = data.sequence || '';
-                document.getElementById('invested-time').value = data.invested_time || '';
-                document.getElementById('elapsed-time').value = data.elapsed_time || '';
-                document.getElementById('start-date').value = data.start_date || '';
-                
-                // Clear any validation warning
-                document.getElementById('validation-warning').style.display = 'none';
-                
-                console.log('Updated metadata sidebar for node:', selected.topic, 'data:', data);
-            }
-            
-            function getNodePath(jm, node) {
-                var path = [];
-                var current = node;
-                
-                while (current && current.id !== 'root') {
-                    path.unshift(current.topic);
-                    current = current.parent ? jm.get_node(current.parent) : null;
-                }
-                
-                if (node.id === 'root') {
-                    return 'Root Node';
-                }
-                
-                return 'Root → ' + path.join(' → ');
-            }
-            
-            function saveNodeMetadata(jm) {
-                var selected = jm.get_selected_node();
-                if (!selected) return;
-                
-                // Get the new node name and update the node topic if changed
-                var newNodeName = document.getElementById('node-name').value.trim();
-                if (newNodeName && newNodeName !== selected.topic) {
-                    jm.update_node(selected.id, newNodeName);
-                    // Update the sidebar title to reflect the change
-                    document.getElementById('selected-node-title').textContent = newNodeName;
-                }
-                
-                // Only save user-editable fields (not sequence, which is auto-calculated)
-                var investedTime = parseFloat(document.getElementById('invested-time').value) || 0;
-                var elapsedTime = parseFloat(document.getElementById('elapsed-time').value) || 0;
-                var startDate = document.getElementById('start-date').value || '';
-                
-                // Validate invested time vs elapsed time
-                if (investedTime > elapsedTime && elapsedTime > 0) {
-                    document.getElementById('validation-warning').style.display = 'block';
+                const tbody = document.getElementById('action-plan-tbody');
+                if (!tbody) {
+                    console.log('Action plan table body not found');
                     return;
-                } else {
-                    document.getElementById('validation-warning').style.display = 'none';
                 }
                 
-                // Update node data (preserve auto-calculated sequence)
-                var data = initNodeData(selected);
-                data.invested_time = investedTime;
-                data.elapsed_time = elapsedTime;
-                data.start_date = startDate;
+                // Clear existing rows
+                tbody.innerHTML = '';
                 
-                console.log('Saved metadata for node:', selected.topic, {
-                    sequence: data.sequence, // Keep existing sequence
-                    invested_time: investedTime,
-                    elapsed_time: elapsedTime,
-                    start_date: startDate
+                // Get all nodes and build rows
+                const allNodes = [];
+                collectAllNodes(jm.get_node('root'), allNodes, 0);
+                
+                // Sort nodes by sequence if available
+                allNodes.sort((a, b) => {
+                    const seqA = a.data?.sequence || '';
+                    const seqB = b.data?.sequence || '';
+                    return seqA.localeCompare(seqB, undefined, { numeric: true });
                 });
                 
-                // Run the same functionality as Update Sequences to update all nodes
-                updateSequences();
+                // Create table rows
+                allNodes.forEach(nodeInfo => {
+                    const row = createActionPlanRow(nodeInfo.node, nodeInfo.level);
+                    tbody.appendChild(row);
+                });
                 
-                // Show success feedback (optional)
-                var saveBtn = document.getElementById('save-metadata');
-                var originalText = saveBtn.textContent;
-                saveBtn.textContent = 'Saved!';
-                saveBtn.style.background = '#28a745';
-                setTimeout(function() {
-                    saveBtn.textContent = originalText;
-                    saveBtn.style.background = '#007bff';
-                }, 1000);
+                // Update totals row
+                updateActionPlanTotals(allNodes);
+                
+                console.log('Updated Action Plan table with', allNodes.length, 'nodes');
             }
             
-            function resetMetadataForm(jm) {
-                var selected = jm.get_selected_node();
-                if (!selected) return;
+            function collectAllNodes(node, collection, level) {
+                if (!node) return;
                 
-                // Reset to original values using new data initialization
-                var data = initNodeData(selected);
-                document.getElementById('node-sequence').value = data.sequence || '';
-                document.getElementById('invested-time').value = data.invested_time || '';
-                document.getElementById('elapsed-time').value = data.elapsed_time || '';
-                document.getElementById('start-date').value = data.start_date || '';
+                // Add current node to collection
+                collection.push({
+                    node: node,
+                    level: level
+                });
                 
-                // Clear validation warning
-                document.getElementById('validation-warning').style.display = 'none';
-                
-                console.log('Reset metadata form for node:', selected.topic);
-            }
-            
-            function validateTimes() {
-                var investedTime = parseFloat(document.getElementById('invested-time').value) || 0;
-                var elapsedTime = parseFloat(document.getElementById('elapsed-time').value) || 0;
-                
-                var warning = document.getElementById('validation-warning');
-                if (investedTime > elapsedTime && elapsedTime > 0) {
-                    warning.style.display = 'block';
-                } else {
-                    warning.style.display = 'none';
+                // Recursively add children
+                if (node.children && Array.isArray(node.children)) {
+                    node.children.forEach(childId => {
+                        const childNode = jm.get_node(childId);
+                        if (childNode) {
+                            collectAllNodes(childNode, collection, level + 1);
+                        }
+                    });
                 }
             }
-
+            
+            function updateActionPlanTotals(allNodes) {
+                let totalCount = 0;
+                let totalInvested = 0;
+                let totalElapsed = 0;
+                let maxStartDate = null;
+                
+                allNodes.forEach(nodeInfo => {
+                    const data = initNodeData(nodeInfo.node);
+                    
+                    // Count nodes with sequences (non-empty sequence numbers)
+                    if (data.sequence && data.sequence !== '') {
+                        totalCount++;
+                    }
+                    
+                    // Sum invested and elapsed times
+                    const invested = parseFloat(data.invested_time) || 0;
+                    const elapsed = parseFloat(data.elapsed_time) || 0;
+                    totalInvested += invested;
+                    totalElapsed += elapsed;
+                    
+                    // Find maximum (latest) start date
+                    if (data.start_date && data.start_date !== '') {
+                        const currentDate = new Date(data.start_date);
+                        if (!maxStartDate || currentDate > maxStartDate) {
+                            maxStartDate = currentDate;
+                        }
+                    }
+                });
+                
+                // Update the totals row
+                document.getElementById('total-count').textContent = totalCount.toString();
+                document.getElementById('total-invested').textContent = totalInvested.toFixed(1);
+                document.getElementById('total-elapsed').textContent = totalElapsed.toFixed(1);
+                
+                if (maxStartDate) {
+                    document.getElementById('max-start-date').textContent = formatDateForDisplay(maxStartDate.toISOString().split('T')[0]);
+                } else {
+                    document.getElementById('max-start-date').textContent = '-';
+                }
+                
+                console.log('Updated totals:', {
+                    count: totalCount,
+                    invested: totalInvested,
+                    elapsed: totalElapsed,
+                    maxDate: maxStartDate
+                });
+            }
+            
+            function createActionPlanRow(node, level) {
+                const data = initNodeData(node);
+                const row = document.createElement('tr');
+                row.setAttribute('data-node-id', node.id);
+                
+                // Description cell with indentation based on level
+                const descCell = document.createElement('td');
+                descCell.className = `description-col node-level-${Math.min(level, 4)}`;
+                const descInput = document.createElement('input');
+                descInput.type = 'text';
+                descInput.value = node.topic || '';
+                descInput.setAttribute('data-field', 'description');
+                descInput.addEventListener('blur', () => saveRowChanges(row));
+                descCell.appendChild(descInput);
+                
+                // Sequence cell (read-only, treated as text)
+                const seqCell = document.createElement('td');
+                seqCell.className = 'sequence-col';
+                seqCell.textContent = data.sequence || '';
+                seqCell.style.fontFamily = 'monospace';
+                seqCell.style.fontSize = '11px';
+                
+                // Invested time cell
+                const investedCell = document.createElement('td');
+                investedCell.className = 'time-col';
+                const investedInput = document.createElement('input');
+                investedInput.type = 'number';
+                investedInput.min = '0';
+                investedInput.step = '0.25';
+                investedInput.value = data.invested_time || '';
+                investedInput.setAttribute('data-field', 'invested_time');
+                investedInput.addEventListener('blur', () => saveRowChanges(row));
+                investedCell.appendChild(investedInput);
+                
+                // Elapsed time cell
+                const elapsedCell = document.createElement('td');
+                elapsedCell.className = 'time-col';
+                const elapsedInput = document.createElement('input');
+                elapsedInput.type = 'number';
+                elapsedInput.min = '0';
+                elapsedInput.step = '0.25';
+                elapsedInput.value = data.elapsed_time || '';
+                elapsedInput.setAttribute('data-field', 'elapsed_time');
+                elapsedInput.addEventListener('blur', () => saveRowChanges(row));
+                elapsedCell.appendChild(elapsedInput);
+                
+                // Start date cell
+                const dateCell = document.createElement('td');
+                dateCell.className = 'date-col';
+                const dateInput = document.createElement('input');
+                dateInput.type = 'date';
+                dateInput.value = data.start_date || '';
+                dateInput.setAttribute('data-field', 'start_date');
+                dateInput.addEventListener('blur', () => saveRowChanges(row));
+                dateCell.appendChild(dateInput);
+                
+                // Assemble row
+                row.appendChild(descCell);
+                row.appendChild(seqCell);
+                row.appendChild(investedCell);
+                row.appendChild(elapsedCell);
+                row.appendChild(dateCell);
+                
+                return row;
+            }
+            
+            function saveRowChanges(row) {
+                const nodeId = row.getAttribute('data-node-id');
+                const node = jm.get_node(nodeId);
+                if (!node) {
+                    console.log('Node not found:', nodeId);
+                    return;
+                }
+                
+                // Get all input values from the row
+                const inputs = row.querySelectorAll('input');
+                const changes = {};
+                let hasChanges = false;
+                
+                inputs.forEach(input => {
+                    const field = input.getAttribute('data-field');
+                    const value = input.value.trim();
+                    
+                    if (field === 'description') {
+                        // Update node topic if changed
+                        if (value && value !== node.topic) {
+                            jm.update_node(nodeId, value);
+                            hasChanges = true;
+                            console.log('Updated node description:', value);
+                        }
+                    } else {
+                        // Update node data
+                        const data = initNodeData(node);
+                        const oldValue = data[field];
+                        const newValue = (field.includes('time')) ? (parseFloat(value) || 0) : value;
+                        
+                        if (newValue !== oldValue) {
+                            data[field] = newValue;
+                            changes[field] = newValue;
+                            hasChanges = true;
+                        }
+                    }
+                });
+                
+                if (hasChanges) {
+                    console.log('Saved changes for node:', node.topic, changes);
+                    validateActionPlanTimes();
+                    
+                    // Update totals when data changes
+                    updateActionPlanTable();
+                }
+            }
+            
+            function saveAllActionPlanChanges() {
+                const tbody = document.getElementById('action-plan-tbody');
+                if (!tbody) return;
+                
+                const rows = tbody.querySelectorAll('tr');
+                let savedCount = 0;
+                
+                rows.forEach(row => {
+                    saveRowChanges(row);
+                    savedCount++;
+                });
+                
+                // Update sequences and refresh display
+                updateAllSequenceNumbers();
+                
+                // Refresh the visual nodes
+                if (showSequences) {
+                    toggleSequenceDisplay();
+                    toggleSequenceDisplay(); // Toggle twice to refresh
+                }
+                if (showMetadata) {
+                    toggleFullMetadata();
+                    toggleFullMetadata(); // Toggle twice to refresh
+                }
+                
+                alert(`Saved changes for ${savedCount} tasks and updated sequences.`);
+                console.log('Saved all action plan changes and updated sequences');
+            }
+            
+            function validateActionPlanTimes() {
+                const tbody = document.getElementById('action-plan-tbody');
+                const warningDiv = document.getElementById('validation-warning');
+                if (!tbody || !warningDiv) return;
+                
+                let hasWarnings = false;
+                const rows = tbody.querySelectorAll('tr');
+                
+                rows.forEach(row => {
+                    const investedInput = row.querySelector('input[data-field="invested_time"]');
+                    const elapsedInput = row.querySelector('input[data-field="elapsed_time"]');
+                    
+                    if (investedInput && elapsedInput) {
+                        const invested = parseFloat(investedInput.value) || 0;
+                        const elapsed = parseFloat(elapsedInput.value) || 0;
+                        
+                        if (invested > elapsed && elapsed > 0) {
+                            hasWarnings = true;
+                            // Highlight problematic rows
+                            investedInput.style.backgroundColor = '#f8d7da';
+                            elapsedInput.style.backgroundColor = '#f8d7da';
+                        } else {
+                            // Remove highlighting
+                            investedInput.style.backgroundColor = '';
+                            elapsedInput.style.backgroundColor = '';
+                        }
+                    }
+                });
+                
+                warningDiv.style.display = hasWarnings ? 'block' : 'none';
+            }
+            
             // ===== DATA PERSISTENCE (FEATURE 4) =====
             
             /**
@@ -1560,7 +1866,7 @@
                             
                             // Select root node
                             jm.select_node('root');
-                            updateMetadataSidebar(jm);
+                            updateActionPlanTable();
                             
                             // If sequence display is enabled, refresh it
                             var sequenceCheckbox = document.getElementById('show-sequences');
@@ -1879,7 +2185,7 @@
                 jm.show(mind);
                 
                 // Initialize metadata handling
-                setupMetadataHandling(jm);
+                setupActionPlanHandling(jm);
                 
                 // Initialize collapsible sidebar
                 setupCollapsibleSidebar();
@@ -1911,7 +2217,7 @@
                 setTimeout(function() {
                     jm.select_node('root');
                     console.log('Root node selected');
-                    updateMetadataSidebar(jm); // Update sidebar with root selection
+                    updateActionPlanTable(); // Update sidebar with root selection
                 }, 300);
                 
                 // Add FreeMind-like keyboard shortcuts
@@ -1926,17 +2232,10 @@
             
             function setupFreeMindShortcuts(jm) {
                 document.addEventListener('keydown', function(e) {
-                    // Check if we're in edit mode (sidebar visible)
-                    var editModeToggle = document.getElementById('edit-mode-toggle');
-                    var isInEditMode = editModeToggle && editModeToggle.checked;
-                    
-                    // Check if focus is on an input field in the metadata sidebar
+                    // Check if focus is on an input field in the Action Plan sidebar
                     var activeElement = document.activeElement;
-                    var isEditingMetadata = isInEditMode && (
-                        activeElement.id === 'invested-time' ||
-                        activeElement.id === 'elapsed-time' ||
-                        activeElement.closest('#sidebar-panel')
-                    );
+                    var isEditingActionPlan = activeElement.closest('#sidebar-panel') && 
+                                            (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA');
                     
                     var selected_node = jm.get_selected_node();
                     
@@ -1944,11 +2243,11 @@
                     var isEditing = jm.view.editing_node !== null;
                     
                     // Debug logging
-                    console.log('Key pressed:', e.keyCode, 'Selected node:', selected_node, 'Editing:', isEditing, 'EditMode:', isInEditMode, 'EditingMetadata:', isEditingMetadata);
+                    console.log('Key pressed:', e.keyCode, 'Selected node:', selected_node, 'Editing:', isEditing, 'EditingActionPlan:', isEditingActionPlan);
                     
-                    // If we're editing metadata in the sidebar, don't handle shortcuts
-                    if (isEditingMetadata) {
-                        console.log('Ignoring shortcut - editing metadata in sidebar');
+                    // If we're editing in the Action Plan sidebar, don't handle shortcuts
+                    if (isEditingActionPlan) {
+                        console.log('Ignoring shortcut - editing in Action Plan sidebar');
                         return;
                     }
                     
@@ -1984,7 +2283,7 @@
                                         elapsed_time: 0
                                     });
                                     jm.select_node(new_id);
-                                    updateMetadataSidebar(jm); // Update sidebar
+                                    updateActionPlanTable(); // Update sidebar
                                     jm.begin_edit(new_id);
                                 } else {
                                     var parent = jm.get_node(selected_node.parent);
@@ -1996,7 +2295,7 @@
                                             elapsed_time: 0
                                         });
                                         jm.select_node(new_id);
-                                        updateMetadataSidebar(jm); // Update sidebar
+                                        updateActionPlanTable(); // Update sidebar
                                         jm.begin_edit(new_id);
                                     }
                                 }
@@ -2013,7 +2312,7 @@
                                 elapsed_time: 0
                             });
                             jm.select_node(new_id);
-                            updateMetadataSidebar(jm); // Update sidebar
+                            updateActionPlanTable(); // Update sidebar
                             jm.begin_edit(new_id);
                             break;
                             
@@ -2085,13 +2384,13 @@
                                 if (parent_node) {
                                     setTimeout(function() {
                                         jm.select_node(parent_node.id);
-                                        updateMetadataSidebar(jm); // Update sidebar after deletion
+                                        updateActionPlanTable(); // Update sidebar after deletion
                                         console.log('Selected parent node after deletion:', parent_node.topic);
                                     }, 50);
                                 } else {
                                     // If no parent, update sidebar to show no selection
                                     setTimeout(function() {
-                                        updateMetadataSidebar(jm);
+                                        updateActionPlanTable();
                                     }, 50);
                                 }
                             } else {
