@@ -322,8 +322,20 @@
             }
 
             /* Responsive column widths */
+            .action-plan-table .select-col {
+                width: 8%;
+                min-width: 40px;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+            .action-plan-table .select-col input[type="checkbox"] {
+                transform: scale(1.2);
+                cursor: pointer;
+            }
+
             .action-plan-table .description-col {
-                width: 45%; /* Flexible width for descriptions */
+                width: 37%; /* Adjusted to accommodate selection column */
                 min-width: 150px;
                 word-wrap: break-word;
                 overflow-wrap: break-word;
@@ -424,6 +436,13 @@
                 border-top: 2px solid #007bff;
             }
 
+            .action-plan-table .totals-row .select-col {
+                text-align: center;
+                font-size: 10px;
+                color: #007bff;
+                font-weight: bold;
+            }
+
             .action-plan-table .totals-row .description-col {
                 text-align: left;
                 font-weight: bold;
@@ -432,8 +451,13 @@
 
             /* Responsive adjustments for smaller sidebar widths */
             @media (max-width: 1200px) {
+                .action-plan-table .select-col {
+                    width: 8%;
+                    min-width: 35px;
+                }
+                
                 .action-plan-table .description-col {
-                    width: 40%;
+                    width: 32%;
                     min-width: 120px;
                 }
                 
@@ -747,6 +771,9 @@
                         <table class="action-plan-table" id="action-plan-table">
                             <thead>
                                 <tr>
+                                    <th class="select-col">
+                                        <input type="checkbox" id="select-all-checkbox" title="Select/Deselect All">
+                                    </th>
                                     <th class="description-col">Description</th>
                                     <th class="sequence-col">#</th>
                                     <th class="time-col">Invested (hrs)</th>
@@ -759,6 +786,9 @@
                             </tbody>
                             <tfoot>
                                 <tr id="action-plan-totals" class="totals-row">
+                                    <td class="select-col">
+                                        <span id="selected-count">0</span>/<span id="total-rows">0</span>
+                                    </td>
                                     <td class="description-col"><strong>TOTALS</strong></td>
                                     <td class="sequence-col" id="total-count">0</td>
                                     <td class="time-col" id="total-invested">0.0</td>
@@ -793,7 +823,7 @@
                                 <button onclick="updateSequences()" class="btn btn-primary">
                                     🔄 Update Sequences
                                 </button>
-                                <button onclick="exportActionPlan()" class="btn btn-export">
+                                <button onclick="exportActionPlan()" class="btn btn-export" title="Export all tasks or selected tasks (if any are selected)">
                                     📈 Export Action Plan
                                 </button>
                             </div>
@@ -1052,6 +1082,9 @@
                 }
                 if (typeof node.data.start_date === 'undefined') {
                     node.data.start_date = '';
+                }
+                if (typeof node.data.selected === 'undefined') {
+                    node.data.selected = false;
                 }
                 return node.data;
             }
@@ -1500,6 +1533,19 @@
                     tbody.appendChild(row);
                 });
                 
+                // Set up select all checkbox event listener (only once)
+                const selectAllCheckbox = document.getElementById('select-all-checkbox');
+                if (selectAllCheckbox) {
+                    // Remove existing event listeners to avoid duplicates
+                    selectAllCheckbox.replaceWith(selectAllCheckbox.cloneNode(true));
+                    const newSelectAllCheckbox = document.getElementById('select-all-checkbox');
+                    newSelectAllCheckbox.addEventListener('change', handleSelectAll);
+                }
+                
+                // Update selection counter and select all state
+                updateSelectionCounter();
+                updateSelectAllCheckbox();
+                
                 // Update totals row
                 updateActionPlanTotals(allNodes);
                 
@@ -1579,6 +1625,20 @@
                 const row = document.createElement('tr');
                 row.setAttribute('data-node-id', node.id);
                 
+                // Selection checkbox cell
+                const selectCell = document.createElement('td');
+                selectCell.className = 'select-col';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'row-select-checkbox';
+                checkbox.checked = data.selected || false; // Default to false if not set
+                checkbox.addEventListener('change', () => {
+                    data.selected = checkbox.checked;
+                    updateSelectionCounter();
+                    updateSelectAllCheckbox();
+                });
+                selectCell.appendChild(checkbox);
+                
                 // Description cell with indentation based on level
                 const descCell = document.createElement('td');
                 descCell.className = `description-col node-level-${Math.min(level, 4)}`;
@@ -1631,6 +1691,7 @@
                 dateCell.appendChild(dateInput);
                 
                 // Assemble row
+                row.appendChild(selectCell);
                 row.appendChild(descCell);
                 row.appendChild(seqCell);
                 row.appendChild(investedCell);
@@ -1747,6 +1808,98 @@
                 
                 warningDiv.style.display = hasWarnings ? 'block' : 'none';
             }
+            
+            // ===== SELECTION FUNCTIONALITY =====
+            
+            /**
+             * Update the selection counter in the totals row
+             */
+            function updateSelectionCounter() {
+                const checkboxes = document.querySelectorAll('.row-select-checkbox');
+                const selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+                const totalCount = checkboxes.length;
+                
+                const selectedCountElement = document.getElementById('selected-count');
+                const totalRowsElement = document.getElementById('total-rows');
+                
+                if (selectedCountElement) {
+                    selectedCountElement.textContent = selectedCount;
+                }
+                if (totalRowsElement) {
+                    totalRowsElement.textContent = totalCount;
+                }
+                
+                console.log(`Selection updated: ${selectedCount}/${totalCount} rows selected`);
+            }
+            
+            /**
+             * Update the select all checkbox state based on individual row selections
+             */
+            function updateSelectAllCheckbox() {
+                const selectAllCheckbox = document.getElementById('select-all-checkbox');
+                const rowCheckboxes = document.querySelectorAll('.row-select-checkbox');
+                
+                if (!selectAllCheckbox || rowCheckboxes.length === 0) return;
+                
+                const checkedCount = Array.from(rowCheckboxes).filter(cb => cb.checked).length;
+                const totalCount = rowCheckboxes.length;
+                
+                if (checkedCount === 0) {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                } else if (checkedCount === totalCount) {
+                    selectAllCheckbox.checked = true;
+                    selectAllCheckbox.indeterminate = false;
+                } else {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = true;
+                }
+            }
+            
+            /**
+             * Handle select all checkbox functionality
+             */
+            function handleSelectAll() {
+                const selectAllCheckbox = document.getElementById('select-all-checkbox');
+                const rowCheckboxes = document.querySelectorAll('.row-select-checkbox');
+                
+                if (!selectAllCheckbox) return;
+                
+                const shouldSelect = selectAllCheckbox.checked;
+                
+                rowCheckboxes.forEach(checkbox => {
+                    if (checkbox.checked !== shouldSelect) {
+                        checkbox.checked = shouldSelect;
+                        // Trigger the change event to update node data
+                        checkbox.dispatchEvent(new Event('change'));
+                    }
+                });
+                
+                console.log(`${shouldSelect ? 'Selected' : 'Deselected'} all ${rowCheckboxes.length} rows`);
+            }
+            
+            /**
+             * Get all selected nodes
+             */
+            function getSelectedNodes() {
+                const selectedNodes = [];
+                const checkboxes = document.querySelectorAll('.row-select-checkbox');
+                
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const row = checkbox.closest('tr');
+                        const nodeId = row.getAttribute('data-node-id');
+                        const node = jm.get_node(nodeId);
+                        if (node) {
+                            selectedNodes.push(node);
+                        }
+                    }
+                });
+                
+                return selectedNodes;
+            }
+            
+            // ===== END SELECTION FUNCTIONALITY =====
             
             // ===== DATA PERSISTENCE (FEATURE 4) =====
             
@@ -1959,6 +2112,15 @@
                     // Ensure sequences are up to date
                     updateAllSequenceNumbers();
                     
+                    // Check if any nodes are selected
+                    var selectedNodes = getSelectedNodes();
+                    var exportOnlySelected = selectedNodes.length > 0;
+                    
+                    if (exportOnlySelected) {
+                        console.log('Exporting only selected nodes:', selectedNodes.length, 'nodes selected');
+                        showNotification(`Exporting ${selectedNodes.length} selected nodes only`, 'success');
+                    }
+                    
                     // Get the mind map data
                     var mindData = jm.get_data('node_array');
                     
@@ -1974,6 +2136,12 @@
                     var exportLeavesOnly = document.getElementById('export-leaves-only').checked;
                     console.log('Export leaves only:', exportLeavesOnly);
                     
+                    // Create a set of selected node IDs for quick lookup
+                    var selectedNodeIds = new Set();
+                    if (exportOnlySelected) {
+                        selectedNodes.forEach(node => selectedNodeIds.add(node.id));
+                    }
+                    
                     // Prepare CSV data
                     var csvData = [];
                     var hasValidationWarnings = false;
@@ -1987,6 +2155,11 @@
                     mindData.data.forEach(function(nodeData) {
                         // Skip the root node unless it has meaningful content
                         if (nodeData.isroot && (nodeData.topic === 'Main Node' || nodeData.topic === 'root')) {
+                            return;
+                        }
+                        
+                        // If exporting only selected nodes, skip unselected ones
+                        if (exportOnlySelected && !selectedNodeIds.has(nodeData.id)) {
                             return;
                         }
                         
