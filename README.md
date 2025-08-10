@@ -32,17 +32,15 @@ A customizable mind mapping tool based on jsMind with FreeMind-like keyboard sho
 
 2. **Access the applications:**
    - **Pilot Version**: http://localhost:8000/pilot-mindmap.html
-   - **Test Version**: http://localhost:8000/test-mindmap.html
 
 ## 📁 Project Structure
 
 ```
 jsmind-poc/
-├── pilot-mindmap.html      # Clean production interface
-├── test-mindmap.html       # Debug version with status info
-├── jsmind/                 # jsMind library (forked from hizzgdev/jsmind)
+├── pilot-mindmap.html      # Main app
+├── jsmind/                 # jsMind library (vendored locally)
 ├── docs/                   # Project documentation
-└── tasks.md               # Development tasks and progress
+└── README.md
 ```
 
 ## ✅ Completed Tasks
@@ -51,34 +49,40 @@ jsmind-poc/
 - **Task 1.2**: ✅ Clean UI for pilot - preserve only core mind mapping
 - **Bug Fix**: ✅ Fixed Enter key creating nodes while editing text
 - **Feature 4**: ✅ Data Persistence - Save/load mind maps as JSON files
+- **Security**: ✅ Added CSP header and secured file loading
 
 ## 🎨 Extended Data Model
 
 Each node supports the following custom attributes:
+
 - `sequence`: Ordering/priority number
 - `invested_time`: Time spent on this topic
 - `elapsed_time`: Total time elapsed
+- `start_date`: ISO date string
+- `selected`: Selection state for exports
 
-## 🔧 Development
+## 🔒 Security Hardening for Public Hosting
 
-The project uses the jsMind library with custom enhancements:
+- Content Security Policy (CSP) via meta tag restricts resources to `self`, blocks object embedding, and disallows external connections.
+- File upload hardened with:
+  - 5MB size limit
+  - 1s cooldown between loads
+  - File type validation for `.json`
+- All dependencies are served locally (no external CDNs).
 
-### Building ES6 Files
-```bash
-cd jsmind
-npm install
-npm run build
-```
+These make the app safe to host on a public site or GitHub Pages.
 
-### Testing
-Open the test version to see debug information and verify functionality.
+## 🌐 Deploying to GitHub Pages
 
-## 📋 Next Steps
+Project uses only static files, so Pages can serve directly from the repo:
 
-- Implement CSV export with custom format
-- Add UI for editing custom node attributes
-- Enhanced node styling and themes
-- Data persistence and loading
+1. Push this repository to GitHub.
+2. In GitHub: Settings → Pages → Build and deployment
+   - Source: Deploy from a branch
+   - Branch: `jsmind-poc` (or your default) / folder: `/ (root)`
+3. Open: `https://<your-username>.github.io/<repo-name>/pilot-mindmap.html`
+
+Optional: create an `index.html` that redirects to `pilot-mindmap.html` for a cleaner URL.
 
 ## 🏗️ Based On
 

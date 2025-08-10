@@ -1,0 +1,206 @@
+{
+  "meta": {
+    "name": "PEP Memory Map",
+    "author": "PEP Team",
+    "version": "1.0",
+    "export_date": "2025-08-03T12:00:24.115Z",
+    "application": "PEP Memory Map"
+  },
+  "format": "node_array",
+  "data": [
+    {
+      "id": "root",
+      "topic": "WRAP",
+      "expanded": true,
+      "isroot": true,
+      "sequence": "",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "node_1754209721978",
+      "topic": "1. Coaching",
+      "expanded": true,
+      "parentid": "root",
+      "direction": "right",
+      "sequence": "1",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "node_1754209779791",
+      "topic": "PRJ GWS 300",
+      "expanded": true,
+      "parentid": "node_1754209721978",
+      "sequence": "1.1",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "node_1754209790266",
+      "topic": "COER+AP till before flying",
+      "expanded": true,
+      "parentid": "node_1754209779791",
+      "sequence": "1.1.1",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "86f0e12f99909e33",
+      "topic": "PRJ Swinburne",
+      "expanded": true,
+      "parentid": "node_1754209721978",
+      "sequence": "1.2",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "86f0c4df2e21912c",
+      "topic": "2. Health",
+      "expanded": true,
+      "parentid": "root",
+      "direction": "right",
+      "sequence": "2",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "node_1754209869217",
+      "topic": "PRJ WRAP consistency",
+      "expanded": true,
+      "parentid": "86f0c4df2e21912c",
+      "sequence": "2.1",
+      "invested_time": 2,
+      "elapsed_time": 3
+    },
+    {
+      "id": "86fca2dd8681be50",
+      "topic": "PRJ ITB-Knee Healing",
+      "expanded": true,
+      "parentid": "86f0c4df2e21912c",
+      "sequence": "2.2",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "86f0c669d0ed992a",
+      "topic": "3. Finance",
+      "expanded": true,
+      "parentid": "root",
+      "direction": "left",
+      "sequence": "3",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "node_1754222199784",
+      "topic": "PRJ Expenses Report",
+      "expanded": true,
+      "parentid": "86f0c669d0ed992a",
+      "sequence": "3.1",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "86fcadfda428b2a5",
+      "topic": "PRJ SMSF Rebalance",
+      "expanded": true,
+      "parentid": "86f0c669d0ed992a",
+      "sequence": "3.2",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "86fcb2a43cffec9d",
+      "topic": "PRJ Brazil SMSF pty",
+      "expanded": true,
+      "parentid": "86f0c669d0ed992a",
+      "sequence": "3.3",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "86f0c8dfdc923273",
+      "topic": "4. Biodanza",
+      "expanded": true,
+      "parentid": "root",
+      "direction": "left",
+      "sequence": "4",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "node_1754222280202",
+      "topic": "PRJ MusicDB React",
+      "expanded": true,
+      "parentid": "86f0c8dfdc923273",
+      "sequence": "4.1",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "86fcbe28dbbde1bc",
+      "topic": "KR T3 Vivencias",
+      "expanded": true,
+      "parentid": "86f0c8dfdc923273",
+      "sequence": "4.2",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "86fcc21bafb523e3",
+      "topic": "PRJ BSC1 Next Module",
+      "expanded": true,
+      "parentid": "86f0c8dfdc923273",
+      "sequence": "4.3",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "86f0c9f920fb6745",
+      "topic": "5. SW Engineer",
+      "expanded": true,
+      "parentid": "root",
+      "direction": "right",
+      "sequence": "5",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "node_1754222345185",
+      "topic": "PRJ ChatGPT Agent",
+      "expanded": true,
+      "parentid": "86f0c9f920fb6745",
+      "sequence": "5.1",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "node_1754222358625",
+      "topic": "Research COER",
+      "expanded": true,
+      "parentid": "node_1754222345185",
+      "sequence": "5.1.1",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "86fcd37396296582",
+      "topic": "PRJ MVC Pilot",
+      "expanded": true,
+      "parentid": "86f0c9f920fb6745",
+      "sequence": "5.2",
+      "invested_time": 0,
+      "elapsed_time": 0
+    },
+    {
+      "id": "node_1754222396727",
+      "topic": "Research COER",
+      "expanded": true,
+      "parentid": "86fcd37396296582",
+      "sequence": "5.2.1",
+      "invested_time": 0,
+      "elapsed_time": 0
+    }
+  ]
+}

@@ -4,6 +4,7 @@
         <meta charset="utf-8" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; connect-src 'none'">
         <title>PEP Memory Map - Pilot</title>
         <link
             type="text/css"
@@ -921,6 +922,11 @@
             var showSequences = false;
             var showMetadata = false;
             var jm; // Global reference to jsMind instance
+            
+            // Security: throttle and size limit for file uploads
+            var lastFileLoad = 0;
+            var FILE_LOAD_COOLDOWN = 1000; // 1s cooldown between file loads
+            var MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024; // 5MB max upload size
             
             // ===== UTILITY FUNCTIONS =====
             
@@ -2160,13 +2166,30 @@
             function loadMindMap(event) {
                 console.log('=== LOADING MIND MAP ===');
                 
+                // Basic rate limiting
+                var now = Date.now();
+                if (now - lastFileLoad < FILE_LOAD_COOLDOWN) {
+                    alert('Please wait a moment before loading another file.');
+                    if (event && event.target) event.target.value = '';
+                    return;
+                }
+                lastFileLoad = now;
+                
                 var file = event.target.files[0];
                 if (!file) {
                     return;
                 }
                 
+                // Enforce file size limit
+                if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+                    alert('File too large. Please select a file under 5MB.');
+                    event.target.value = '';
+                    return;
+                }
+                
                 if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
                     alert('Please select a valid JSON file.');
+                    event.target.value = '';
                     return;
                 }
                 
