@@ -778,7 +778,7 @@
                                     <th class="description-col">Description</th>
                                     <th class="sequence-col">#</th>
                                     <th class="time-col">Invested (hrs)</th>
-                                    <th class="time-col">Elapsed (hrs)</th>
+                                    <th class="time-col">Elapsed (days)</th>
                                     <th class="date-col">Start Date</th>
                                 </tr>
                             </thead>
@@ -1648,7 +1648,7 @@
                 // Update the totals row
                 document.getElementById('total-count').textContent = totalCount.toString();
                 document.getElementById('total-invested').textContent = totalInvested.toFixed(1);
-                document.getElementById('total-elapsed').textContent = totalElapsed.toFixed(1);
+                document.getElementById('total-elapsed').textContent = (totalElapsed / 24).toFixed(1);
                 
                 if (maxStartDate) {
                     document.getElementById('max-start-date').textContent = formatDateForDisplay(maxStartDate.toISOString().split('T')[0]);
@@ -1731,7 +1731,9 @@
                 elapsedInput.type = 'number';
                 elapsedInput.min = '0';
                 elapsedInput.step = '0.25';
-                elapsedInput.value = data.elapsed_time || '';
+                // Convert from hours to days for display
+                const elapsedInHours = parseFloat(data.elapsed_time) || 0;
+                elapsedInput.value = elapsedInHours > 0 ? (elapsedInHours / 24).toFixed(2) : '';
                 elapsedInput.setAttribute('data-field', 'elapsed_time');
                 elapsedInput.addEventListener('blur', () => saveRowChanges(row));
                 elapsedCell.appendChild(elapsedInput);
@@ -1785,7 +1787,17 @@
                         // Update node data
                         const data = initNodeData(node);
                         const oldValue = data[field];
-                        const newValue = (field.includes('time')) ? (parseFloat(value) || 0) : value;
+                        let newValue;
+                        
+                        if (field === 'elapsed_time') {
+                            // Convert from days to hours for storage
+                            const valueInDays = parseFloat(value) || 0;
+                            newValue = valueInDays * 24;
+                        } else if (field.includes('time')) {
+                            newValue = parseFloat(value) || 0;
+                        } else {
+                            newValue = value;
+                        }
                         
                         if (newValue !== oldValue) {
                             data[field] = newValue;
@@ -1847,9 +1859,10 @@
                     
                     if (investedInput && elapsedInput) {
                         const invested = parseFloat(investedInput.value) || 0;
-                        const elapsed = parseFloat(elapsedInput.value) || 0;
+                        const elapsedInDays = parseFloat(elapsedInput.value) || 0;
+                        const elapsedInHours = elapsedInDays * 24; // Convert days to hours for comparison
                         
-                        if (invested > elapsed && elapsed > 0) {
+                        if (invested > elapsedInHours && elapsedInHours > 0) {
                             hasWarnings = true;
                             // Highlight problematic rows
                             investedInput.style.backgroundColor = '#f8d7da';
@@ -2353,7 +2366,7 @@
                     var exportedNodeCount = 0;
                     
                     // CSV Headers
-                    csvData.push(['Task Description', 'Sequence', 'Invested Time', 'Elapsed Time', 'Start Date', 'Path', 'Validation Notes']);
+                    csvData.push(['Task Description', 'Sequence', 'Invested Time', 'Elapsed Time (days)', 'Start Date', 'Path', 'Validation Notes']);
                     
                     // Process each node
                     mindData.data.forEach(function(nodeData) {
@@ -2391,7 +2404,17 @@
                         if (investedMs > 0 && elapsedMs > 0 && investedMs > elapsedMs) {
                             validationNotes = '⚠️ Invested time exceeds elapsed time';
                             hasValidationWarnings = true;
-                            warningMessages.push(`"${nodeData.topic}": Invested time (${nodeMetadata.invested_time}) > Elapsed time (${nodeMetadata.elapsed_time})`);
+                            var elapsedDays = (parseFloat(nodeMetadata.elapsed_time) / 24).toFixed(2);
+                            warningMessages.push(`"${nodeData.topic}": Invested time (${nodeMetadata.invested_time}) > Elapsed time (${elapsedDays} days)`);
+                        }
+                        
+                        // Convert elapsed time from hours to days for export
+                        var elapsedTimeInDays = '';
+                        if (nodeMetadata.elapsed_time && nodeMetadata.elapsed_time !== '') {
+                            var elapsedHours = parseFloat(nodeMetadata.elapsed_time);
+                            if (elapsedHours > 0) {
+                                elapsedTimeInDays = (elapsedHours / 24).toFixed(2);
+                            }
                         }
                         
                         // Add row to CSV
@@ -2399,7 +2422,7 @@
                             nodeData.topic || '',
                             nodeMetadata.sequence || '',
                             nodeMetadata.invested_time || '',
-                            nodeMetadata.elapsed_time || '',
+                            elapsedTimeInDays,
                             nodeMetadata.start_date || '',
                             path,
                             validationNotes
