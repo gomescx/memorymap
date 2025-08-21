@@ -1061,8 +1061,8 @@
                 // First clear the current map by recreating it with just the root
                 var sampleMind = {
                     meta: {
-                        name: 'PEP Memory Map - Sample',
-                        author: 'PEP Team',
+                        name: 'APS Policy Development Project',
+                        author: 'APS Team',
                         version: '1.0',
                     },
                     format: 'node_array',
@@ -1070,63 +1070,47 @@
                         { 
                             id: 'root', 
                             isroot: true, 
-                            topic: 'Project Launch'
+                            topic: 'APS Policy Development'
                         }
                     ],
                 };
                 
                 jm.show(sampleMind);
                 
-                // Add sample nodes with a delay to ensure proper rendering
+                // Add APS project deliverables with a delay to ensure proper rendering
                 setTimeout(function() {
-                    // Add main project phases
-                    jm.add_node('root', 'phase1', 'Planning Phase');
-                    jm.add_node('root', 'phase2', 'Development Phase'); 
-                    jm.add_node('root', 'phase3', 'Testing Phase');
-                    jm.add_node('root', 'phase4', 'Deployment Phase');
+                    // Add main project deliverables (simplified - no sub-tasks)
+                    jm.add_node('root', 'brief', 'Project Brief & Stakeholde ...');
+                    jm.add_node('root', 'literature', 'Literature Review & Works ...'); 
+                    jm.add_node('root', 'draft', 'Draft Policy Paper & Optio ...');
+                    jm.add_node('root', 'review', 'EL2/SES Review & Endors ...');
+                    jm.add_node('root', 'feedback', 'Circulate Draft & Gather F ...');
+                    jm.add_node('root', 'final', 'Finalised Policy & Approval');
+                    jm.add_node('root', 'implementation', 'Implementation Plan');
+                    jm.add_node('root', 'report', 'Project Report & Handover');
                     
-                    // Add detailed tasks after a short delay
+                    // Add metadata with real APS project data (simplified)
                     setTimeout(function() {
-                        // Planning phase tasks
-                        jm.add_node('phase1', 'plan1', 'Requirements Gathering');
-                        jm.add_node('phase1', 'plan2', 'Architecture Design');
-                        jm.add_node('phase1', 'plan3', 'Resource Planning');
+                        var nodes = [
+                            { id: 'brief', invested: 40, elapsed: 15, startDate: '2025-01-15' },
+                            { id: 'literature', invested: 120, elapsed: 25, startDate: '2025-02-05' },
+                            { id: 'draft', invested: 160, elapsed: 20, startDate: '2025-03-15' },
+                            { id: 'review', invested: 40, elapsed: 11, startDate: '2025-04-10' },
+                            { id: 'feedback', invested: 100, elapsed: 20, startDate: '2025-04-25' },
+                            { id: 'final', invested: 60, elapsed: 15, startDate: '2025-05-20' },
+                            { id: 'implementation', invested: 80, elapsed: 10, startDate: '2025-06-10' },
+                            { id: 'report', invested: 30, elapsed: 5, startDate: '2025-06-25' }
+                        ];
                         
-                        // Development phase tasks
-                        jm.add_node('phase2', 'dev1', 'Frontend Development');
-                        jm.add_node('phase2', 'dev2', 'Backend Development');
-                        jm.add_node('phase2', 'dev3', 'Database Setup');
-                        
-                        // Testing phase tasks
-                        jm.add_node('phase3', 'test1', 'Unit Testing');
-                        jm.add_node('phase3', 'test2', 'Integration Testing');
-                        
-                        // Add sub-tasks for some items
-                        setTimeout(function() {
-                            jm.add_node('plan1', 'plan1_1', 'User Stories');
-                            jm.add_node('plan1', 'plan1_2', 'Technical Requirements');
-                            jm.add_node('dev1', 'dev1_1', 'UI Design');
-                            jm.add_node('dev1', 'dev1_2', 'Component Development');
-                            
-                                // Add some sample metadata to nodes
-                                setTimeout(function() {
-                                    var nodes = [
-                                        { id: 'plan1', invested: 4, elapsed: 5, startDate: '2025-08-05' },
-                                        { id: 'plan2', invested: 6, elapsed: 8, startDate: '2025-08-10' },
-                                        { id: 'dev1', invested: 12, elapsed: 15, startDate: '2025-08-15' },
-                                        { id: 'dev2', invested: 16, elapsed: 20, startDate: '2025-08-20' },
-                                        { id: 'test1', invested: 3, elapsed: 4, startDate: '2025-09-01' }
-                                    ];
-                                    
-                                    nodes.forEach(function(nodeInfo) {
-                                        var node = jm.get_node(nodeInfo.id);
-                                        if (node) {
-                                            var data = initNodeData(node);
-                                            data.invested_time = nodeInfo.invested;
-                                            data.elapsed_time = nodeInfo.elapsed;
-                                            data.start_date = nodeInfo.startDate;
-                                        }
-                                    });                                // Force update sequences after all nodes are created
+                        nodes.forEach(function(nodeInfo) {
+                            var node = jm.get_node(nodeInfo.id);
+                            if (node) {
+                                var data = initNodeData(node);
+                                data.invested_time = nodeInfo.invested;
+                                data.elapsed_time = nodeInfo.elapsed;
+                                data.start_date = nodeInfo.startDate;
+                            }
+                        });                                // Force update sequences after all nodes are created
                                 updateAllSequenceNumbers();
                                 
                                 // Select root node
@@ -1138,12 +1122,23 @@
                                 showNotification('Sample mind map created! Try the display options and explore the nodes.', 'success');
                                 
                                 // Set the new initial state after sample map is created
-                                setTimeout(function() {
-                                    setInitialMapState();
-                                }, 100);
-                                
-                            }, 200);
-                        }, 200);
+                        
+                        // Force update sequences after all nodes are created
+                        updateAllSequenceNumbers();
+                        
+                        // Select root node
+                        jm.select_node('root');
+                        // Update Action Plan table
+                        updateActionPlanTable();
+                        
+                        console.log('✓ APS Policy Development sample map created successfully!');
+                        showNotification('APS Policy Development sample map created! Explore the deliverables and their time data.', 'success');
+                        
+                        // Set the new initial state after sample map is created
+                        setTimeout(function() {
+                            setInitialMapState();
+                        }, 100);
+                        
                     }, 200);
                 }, 300);
             }
@@ -1367,7 +1362,7 @@
                             // Build metadata text with times and start date
                             var timeText = '';
                             if (investedTime > 0 || elapsedTime > 0) {
-                                var elapsedDays = (elapsedTime / 24).toFixed(1);
+                                var elapsedDays = elapsedTime.toFixed(1);
                                 timeText = 'I:' + investedTime + 'h E:' + elapsedDays + 'd';
                             } else {
                                 // Show placeholder for nodes with no time data
@@ -1707,7 +1702,7 @@
                 // Update the totals row
                 document.getElementById('total-count').textContent = totalCount.toString();
                 document.getElementById('total-invested').textContent = totalInvested.toFixed(1);
-                document.getElementById('total-elapsed').textContent = (totalElapsed / 24).toFixed(1);
+                document.getElementById('total-elapsed').textContent = totalElapsed.toFixed(1);
                 
                 if (maxStartDate) {
                     document.getElementById('max-start-date').textContent = formatDateForDisplay(maxStartDate.toISOString().split('T')[0]);
@@ -1790,9 +1785,9 @@
                 elapsedInput.type = 'number';
                 elapsedInput.min = '0';
                 elapsedInput.step = '0.25';
-                // Convert from hours to days for display
-                const elapsedInHours = parseFloat(data.elapsed_time) || 0;
-                elapsedInput.value = elapsedInHours > 0 ? (elapsedInHours / 24).toFixed(2) : '';
+                // elapsed_time is already in days, no conversion needed
+                const elapsedInDays = parseFloat(data.elapsed_time) || 0;
+                elapsedInput.value = elapsedInDays > 0 ? elapsedInDays.toString() : '';
                 elapsedInput.setAttribute('data-field', 'elapsed_time');
                 elapsedInput.addEventListener('blur', () => saveRowChanges(row));
                 elapsedCell.appendChild(elapsedInput);
@@ -1854,9 +1849,8 @@
                         let newValue;
                         
                         if (field === 'elapsed_time') {
-                            // Convert from days to hours for storage
-                            const valueInDays = parseFloat(value) || 0;
-                            newValue = valueInDays * 24;
+                            // elapsed_time is stored in days, no conversion needed
+                            newValue = parseFloat(value) || 0;
                         } else if (field.includes('time')) {
                             newValue = parseFloat(value) || 0;
                         } else {
@@ -1922,7 +1916,7 @@
                         // Build metadata text with times and start date
                         let timeText = '';
                         if (investedTime > 0 || elapsedTime > 0) {
-                            const elapsedDays = (elapsedTime / 24).toFixed(1);
+                            const elapsedDays = elapsedTime.toFixed(1);
                             timeText = 'I:' + investedTime + 'h E:' + elapsedDays + 'd';
                         } else {
                             // Show placeholder for nodes with no time data
@@ -1994,7 +1988,7 @@
                             // Build metadata text with times and start date
                             let timeText = '';
                             if (investedTime > 0 || elapsedTime > 0) {
-                                const elapsedDays = (elapsedTime / 24).toFixed(1);
+                                const elapsedDays = elapsedTime.toFixed(1);
                                 timeText = 'I:' + investedTime + 'h E:' + elapsedDays + 'd';
                                 console.log(`Node ${node.topic}: displaying I:${investedTime}h E:${elapsedDays}d`);
                             } else {
@@ -2115,9 +2109,9 @@
                     if (investedInput && elapsedInput) {
                         const invested = parseFloat(investedInput.value) || 0;
                         const elapsedInDays = parseFloat(elapsedInput.value) || 0;
-                        const elapsedInHours = elapsedInDays * 24; // Convert days to hours for comparison
+                        const investedInDays = invested / 24; // Convert invested hours to days for comparison
                         
-                        if (invested > elapsedInHours && elapsedInHours > 0) {
+                        if (investedInDays > elapsedInDays && elapsedInDays > 0) {
                             hasWarnings = true;
                             // Highlight problematic rows
                             investedInput.style.backgroundColor = '#f8d7da';
@@ -2664,16 +2658,16 @@
                         if (investedMs > 0 && elapsedMs > 0 && investedMs > elapsedMs) {
                             validationNotes = '⚠️ Invested time exceeds elapsed time';
                             hasValidationWarnings = true;
-                            var elapsedDays = (parseFloat(nodeMetadata.elapsed_time) / 24).toFixed(2);
+                            var elapsedDays = parseFloat(nodeMetadata.elapsed_time).toFixed(2);
                             warningMessages.push(`"${nodeData.topic}": Invested time (${nodeMetadata.invested_time}) > Elapsed time (${elapsedDays} days)`);
                         }
                         
-                        // Convert elapsed time from hours to days for export
+                        // elapsed_time is already in days, no conversion needed for export
                         var elapsedTimeInDays = '';
                         if (nodeMetadata.elapsed_time && nodeMetadata.elapsed_time !== '') {
-                            var elapsedHours = parseFloat(nodeMetadata.elapsed_time);
-                            if (elapsedHours > 0) {
-                                elapsedTimeInDays = (elapsedHours / 24).toFixed(2);
+                            var elapsedDays = parseFloat(nodeMetadata.elapsed_time);
+                            if (elapsedDays > 0) {
+                                elapsedTimeInDays = elapsedDays.toFixed(2);
                             }
                         }
                         
