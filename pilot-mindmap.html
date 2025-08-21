@@ -985,6 +985,59 @@
             
             // ===== END UTILITY FUNCTIONS =====
             
+            // ===== CHANGE DETECTION SYSTEM =====
+            
+            // Store the initial state of the mind map for change detection
+            var initialMapState = null;
+            
+            /**
+             * Get the current state of the mind map as a string for comparison
+             */
+            function getCurrentMapState() {
+                if (!window.jm) return null;
+                try {
+                    var mindData = jm.get_data('node_array');
+                    return JSON.stringify(mindData);
+                } catch (error) {
+                    console.warn('Error getting current map state:', error);
+                    return null;
+                }
+            }
+            
+            /**
+             * Set the initial state of the mind map
+             */
+            function setInitialMapState() {
+                initialMapState = getCurrentMapState();
+            }
+            
+            /**
+             * Check if the current mind map has been changed from its initial state
+             */
+            function hasMapChanged() {
+                if (initialMapState === null) return false;
+                var currentState = getCurrentMapState();
+                return currentState !== initialMapState;
+            }
+            
+            /**
+             * Check for changes and show confirmation only if needed
+             * @param {string} action - The action being performed (for the confirmation message)
+             * @param {string} customMessage - Optional custom confirmation message
+             * @returns {boolean} - True if user confirmed or no changes detected, false if user cancelled
+             */
+            function confirmIfChanged(action, customMessage) {
+                if (!hasMapChanged()) {
+                    return true; // No changes, proceed without confirmation
+                }
+                
+                var message = customMessage || 
+                    (action + ' will replace your current work. Are you sure you want to continue?');
+                return confirm(message);
+            }
+            
+            // ===== END CHANGE DETECTION SYSTEM =====
+            
             // ===== SAMPLE MAP CREATION =====
             
             /**
@@ -997,8 +1050,8 @@
                     return;
                 }
                 
-                // Confirm before creating sample (since it will replace current data)
-                if (!confirm('Creating a sample map will replace your current work. Are you sure you want to continue?')) {
+                // Check for changes and confirm only if needed
+                if (!confirmIfChanged('Creating a sample map')) {
                     return;
                 }
                 
@@ -1083,6 +1136,11 @@
                                 
                                 console.log('✓ Sample mind map created successfully!');
                                 showNotification('Sample mind map created! Try the display options and explore the nodes.', 'success');
+                                
+                                // Set the new initial state after sample map is created
+                                setTimeout(function() {
+                                    setInitialMapState();
+                                }, 100);
                                 
                             }, 200);
                         }, 200);
@@ -2403,8 +2461,8 @@
                     return;
                 }
                 
-                // Confirm before loading (since it will replace current data)
-                if (!confirm('Loading a mind map will replace your current work. Are you sure you want to continue?')) {
+                // Check for changes and confirm only if needed
+                if (!confirmIfChanged('Loading a mind map')) {
                     // Reset the file input
                     event.target.value = '';
                     return;
@@ -2455,6 +2513,11 @@
                             
                             console.log('✓ Mind map loaded successfully');
                             showNotification('Mind map loaded successfully!', 'success');
+                            
+                            // Set the new initial state after mind map is loaded
+                            setTimeout(function() {
+                                setInitialMapState();
+                            }, 100);
                             
                         }, 500);
                         
@@ -2814,6 +2877,11 @@
                 
                 // Store reference globally for testing
                 window.mindMap = jm;
+                
+                // Set initial state for change detection after initialization is complete
+                setTimeout(function() {
+                    setInitialMapState();
+                }, 1000);
                 
                 console.log('Mind map initialized with Main Node');
                 return jm;
