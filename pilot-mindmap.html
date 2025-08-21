@@ -1309,10 +1309,11 @@
                             // Build metadata text with times and start date
                             var timeText = '';
                             if (investedTime > 0 || elapsedTime > 0) {
-                                timeText = 'I:' + investedTime + 'h E:' + elapsedTime + 'h';
+                                var elapsedDays = (elapsedTime / 24).toFixed(1);
+                                timeText = 'I:' + investedTime + 'h E:' + elapsedDays + 'd';
                             } else {
                                 // Show placeholder for nodes with no time data
-                                timeText = 'I:0h E:0h';
+                                timeText = 'I:0h E:0d';
                             }
                             
                             // Add start date if available
@@ -1776,6 +1777,11 @@
                     const field = input.getAttribute('data-field');
                     const value = input.value.trim();
                     
+                    // Skip inputs without data-field attribute
+                    if (!field) {
+                        return;
+                    }
+                    
                     if (field === 'description') {
                         // Update node topic if changed
                         if (value && value !== node.topic) {
@@ -1803,6 +1809,7 @@
                             data[field] = newValue;
                             changes[field] = newValue;
                             hasChanges = true;
+                            console.log(`Updated ${field} for node ${node.topic}: ${oldValue} -> ${newValue}`);
                         }
                     }
                 });
@@ -1813,10 +1820,203 @@
                     
                     // Update totals when data changes
                     updateActionPlanTable();
+                    
+                    // If metadata is currently visible, refresh the specific node's display
+                    const metadataCheckbox = document.getElementById('show-dates-times');
+                    if (metadataCheckbox && metadataCheckbox.checked) {
+                        console.log('Refreshing metadata display for node:', node.topic);
+                        refreshNodeMetadata(nodeId);
+                    }
                 }
             }
             
+            /**
+             * Refresh metadata display for a specific node
+             */
+            function refreshNodeMetadata(nodeId) {
+                if (!jm) return;
+                
+                const nodeElement = document.querySelector(`jmnode[nodeid="${nodeId}"]`);
+                const node = jm.get_node(nodeId);
+                
+                if (!nodeElement || !node) {
+                    console.log('Node element or node not found for refresh:', nodeId);
+                    return;
+                }
+                
+                // Remove existing metadata
+                const existingMetadata = nodeElement.querySelector('.metadata');
+                if (existingMetadata) {
+                    existingMetadata.remove();
+                }
+                
+                // Add updated metadata if metadata is currently shown
+                if (showMetadata) {
+                    try {
+                        const data = initNodeData(node);
+                        const investedTime = data.invested_time || 0;
+                        const elapsedTime = data.elapsed_time || 0;
+                        const startDate = data.start_date || '';
+                        
+                        const metadataDiv = document.createElement('div');
+                        metadataDiv.className = 'metadata';
+                        
+                        // Build metadata text with times and start date
+                        let timeText = '';
+                        if (investedTime > 0 || elapsedTime > 0) {
+                            const elapsedDays = (elapsedTime / 24).toFixed(1);
+                            timeText = 'I:' + investedTime + 'h E:' + elapsedDays + 'd';
+                        } else {
+                            // Show placeholder for nodes with no time data
+                            timeText = 'I:0h E:0d';
+                        }
+                        
+                        // Add start date if available
+                        let dateText = '';
+                        if (startDate) {
+                            dateText = formatDateForDisplay(startDate, 'Start:');
+                        }
+                        
+                        // Combine time and date information
+                        let metadataText = timeText;
+                        if (dateText) {
+                            metadataText += ' | ' + dateText;
+                        }
+                        
+                        if (metadataText) {
+                            metadataDiv.textContent = metadataText;
+                            nodeElement.appendChild(metadataDiv);
+                            console.log('Refreshed metadata "' + metadataText + '" for node ' + node.topic);
+                        }
+                    } catch (e) {
+                        console.log('✗ Error refreshing metadata for ' + nodeId + ': ' + e.message);
+                    }
+                }
+            }
+
+            /**
+             * Force refresh all metadata displays without toggling
+             */
+            function forceRefreshAllMetadata() {
+                if (!jm) {
+                    console.error('jm is not available - mindmap may not be initialized yet');
+                    return;
+                }
+                
+                const metadataCheckbox = document.getElementById('show-dates-times');
+                const shouldShowMetadata = metadataCheckbox && metadataCheckbox.checked;
+                
+                console.log('Force refreshing all metadata, should show:', shouldShowMetadata);
+                
+                const allNodeElements = document.querySelectorAll('jmnode[nodeid]');
+                console.log('Found ' + allNodeElements.length + ' node elements for refresh');
+                
+                for (let i = 0; i < allNodeElements.length; i++) {
+                    const nodeElement = allNodeElements[i];
+                    const nodeId = nodeElement.getAttribute('nodeid');
+                    const node = jm.get_node(nodeId);
+                    
+                    // Remove existing metadata
+                    const existingMetadata = nodeElement.querySelector('.metadata');
+                    if (existingMetadata) {
+                        existingMetadata.remove();
+                    }
+                    
+                    // Add updated metadata if should be shown
+                    if (shouldShowMetadata && node) {
+                        try {
+                            const data = initNodeData(node);
+                            const investedTime = data.invested_time || 0;
+                            const elapsedTime = data.elapsed_time || 0;
+                            const startDate = data.start_date || '';
+                            
+                            const metadataDiv = document.createElement('div');
+                            metadataDiv.className = 'metadata';
+                            
+                            // Build metadata text with times and start date
+                            let timeText = '';
+                            if (investedTime > 0 || elapsedTime > 0) {
+                                const elapsedDays = (elapsedTime / 24).toFixed(1);
+                                timeText = 'I:' + investedTime + 'h E:' + elapsedDays + 'd';
+                                console.log(`Node ${node.topic}: displaying I:${investedTime}h E:${elapsedDays}d`);
+                            } else {
+                                // Show placeholder for nodes with no time data
+                                timeText = 'I:0h E:0d';
+                            }
+                            
+                            // Add start date if available
+                            let dateText = '';
+                            if (startDate) {
+                                dateText = formatDateForDisplay(startDate, 'Start:');
+                            }
+                            
+                            // Combine time and date information
+                            let metadataText = timeText;
+                            if (dateText) {
+                                metadataText += ' | ' + dateText;
+                            }
+                            
+                            if (metadataText) {
+                                metadataDiv.textContent = metadataText;
+                                nodeElement.appendChild(metadataDiv);
+                                console.log('Force refreshed metadata "' + metadataText + '" for node ' + node.topic);
+                            }
+                        } catch (e) {
+                            console.log('✗ Error force refreshing metadata for ' + nodeId + ': ' + e.message);
+                        }
+                    }
+                }
+            }
+            
+            /**
+             * Force refresh all sequence displays without toggling
+             */
+            function forceRefreshAllSequences() {
+                if (!jm) {
+                    console.error('jm is not available - mindmap may not be initialized yet');
+                    return;
+                }
+                
+                const sequenceCheckbox = document.getElementById('show-sequences');
+                const shouldShowSequences = sequenceCheckbox && sequenceCheckbox.checked;
+                
+                console.log('Force refreshing all sequences, should show:', shouldShowSequences);
+                
+                const allNodeElements = document.querySelectorAll('jmnode[nodeid]');
+                
+                for (let i = 0; i < allNodeElements.length; i++) {
+                    const nodeElement = allNodeElements[i];
+                    const nodeId = nodeElement.getAttribute('nodeid');
+                    const node = jm.get_node(nodeId);
+                    
+                    // Remove existing sequence
+                    const existingSequence = nodeElement.querySelector('.sequence-number');
+                    if (existingSequence) {
+                        existingSequence.remove();
+                    }
+                    
+                    // Add updated sequence if should be shown
+                    if (shouldShowSequences && node) {
+                        try {
+                            const data = initNodeData(node);
+                            const sequence = data.sequence;
+                            
+                            if (sequence !== undefined && sequence !== '') {
+                                const sequenceDiv = document.createElement('div');
+                                sequenceDiv.className = 'sequence-number';
+                                sequenceDiv.textContent = '#' + sequence;
+                                nodeElement.appendChild(sequenceDiv);
+                                console.log('Force refreshed sequence #' + sequence + ' for node ' + node.topic);
+                            }
+                        } catch (e) {
+                            console.log('✗ Error force refreshing sequence for ' + nodeId + ': ' + e.message);
+                        }
+                    }
+                }
+            }
+
             function saveAllActionPlanChanges() {
+                console.log('🔄 saveAllActionPlanChanges called');
                 const tbody = document.getElementById('action-plan-tbody');
                 if (!tbody) return;
                 
@@ -1831,15 +2031,12 @@
                 // Update sequences and refresh display
                 updateAllSequenceNumbers();
                 
-                // Refresh the visual nodes
-                if (showSequences) {
-                    toggleSequenceDisplay();
-                    toggleSequenceDisplay(); // Toggle twice to refresh
-                }
-                if (showMetadata) {
-                    toggleFullMetadata();
-                    toggleFullMetadata(); // Toggle twice to refresh
-                }
+                // Force refresh of visual nodes using dedicated refresh functions
+                console.log('🔄 Calling forceRefreshAllSequences...');
+                forceRefreshAllSequences();
+                console.log('🔄 Calling forceRefreshAllMetadata...');
+                forceRefreshAllMetadata();
+                console.log('🔄 Refresh complete');
                 
                 alert(`Saved changes for ${savedCount} tasks and updated sequences.`);
                 console.log('Saved all action plan changes and updated sequences');
