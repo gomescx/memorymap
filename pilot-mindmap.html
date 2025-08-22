@@ -800,10 +800,7 @@
                         </table>
                     </div>
                     
-                    <div style="margin-top: 15px; text-align: center;">
-                        <button type="button" class="btn" id="refresh-action-plan">🔄 Refresh Table</button>
-                        <button type="button" class="btn btn-secondary" id="save-all-changes">🔄 Refresh Map</button>
-                    </div>
+
                     
                     <!-- Export Actions Section -->
                     <div style="margin-top: 20px; border-top: 1px solid #dee2e6; padding-top: 15px;">
@@ -1408,43 +1405,32 @@
             /**
              * Setup event listeners for automatic sequence updates
              */
+            /**
+             * Setup event listeners for automatic sequence and metadata display updates
+             */
             function setupSequenceEvents(jm) {
-                // Update sequences when nodes are added
-                jm.add_event_listener('add_node', function(data) {
-                    console.log('Node added: ' + data.nodeid);
-                    setTimeout(function() {
-                        updateAllSequenceNumbers();
-                        var sequenceCheckbox = document.getElementById('show-sequences');
-                        var metadataCheckbox = document.getElementById('show-dates-times');
-                        
-                        if (sequenceCheckbox && sequenceCheckbox.checked) {
-                            toggleSequenceDisplay();
-                            toggleSequenceDisplay(); // Toggle twice to refresh
-                        }
-                        if (metadataCheckbox && metadataCheckbox.checked) {
-                            toggleFullMetadata();
-                            toggleFullMetadata(); // Toggle twice to refresh
-                        }
-                    }, 100);
-                });
-
-                // Update sequences when nodes are removed
-                jm.add_event_listener('remove_node', function(data) {
-                    console.log('Node removed: ' + data.nodeid);
-                    setTimeout(function() {
-                        updateAllSequenceNumbers();
-                        var sequenceCheckbox = document.getElementById('show-sequences');
-                        var metadataCheckbox = document.getElementById('show-dates-times');
-                        
-                        if (sequenceCheckbox && sequenceCheckbox.checked) {
-                            toggleSequenceDisplay();
-                            toggleSequenceDisplay(); // Toggle twice to refresh
-                        }
-                        if (metadataCheckbox && metadataCheckbox.checked) {
-                            toggleFullMetadata();
-                            toggleFullMetadata(); // Toggle twice to refresh
-                        }
-                    }, 100);
+                // Listen for all jsMind events for display updates only
+                jm.add_event_listener(function(type, data) {
+                    console.log('jsMind event:', type, data);
+                    
+                    // Handle display refresh for sequence and metadata when nodes are added/removed
+                    if (type === 'edit' && (data.evt === 'add_node' || data.evt === 'remove_node')) {
+                        console.log('Node operation detected:', data.evt, 'for node:', data.node);
+                        setTimeout(function() {
+                            console.log('Refreshing visual displays');
+                            var sequenceCheckbox = document.getElementById('show-sequences');
+                            var metadataCheckbox = document.getElementById('show-dates-times');
+                            
+                            if (sequenceCheckbox && sequenceCheckbox.checked) {
+                                toggleSequenceDisplay();
+                                toggleSequenceDisplay(); // Toggle twice to refresh
+                            }
+                            if (metadataCheckbox && metadataCheckbox.checked) {
+                                toggleFullMetadata();
+                                toggleFullMetadata(); // Toggle twice to refresh
+                            }
+                        }, 250); // Delay to allow table updates to complete first
+                    }
                 });
 
                 console.log('✓ Sequence event listeners set up');
@@ -1538,14 +1524,7 @@
                     }
                 });
 
-                // Add event listeners for Action Plan buttons
-                document.getElementById('refresh-action-plan').addEventListener('click', function() {
-                    updateActionPlanTable();
-                });
 
-                document.getElementById('save-all-changes').addEventListener('click', function() {
-                    saveAllActionPlanChanges();
-                });
 
                 function expandSidebar() {
                     isExpanded = true;
@@ -1756,6 +1735,7 @@
                 descInput.type = 'text';
                 descInput.value = node.topic || '';
                 descInput.setAttribute('data-field', 'description');
+                descInput.addEventListener('input', () => saveRowChanges(row));
                 descInput.addEventListener('blur', () => saveRowChanges(row));
                 descCell.appendChild(descInput);
                 
@@ -1775,6 +1755,7 @@
                 investedInput.step = '0.25';
                 investedInput.value = data.invested_time || '';
                 investedInput.setAttribute('data-field', 'invested_time');
+                investedInput.addEventListener('input', () => saveRowChanges(row));
                 investedInput.addEventListener('blur', () => saveRowChanges(row));
                 investedCell.appendChild(investedInput);
                 
@@ -1789,6 +1770,7 @@
                 const elapsedInDays = parseFloat(data.elapsed_time) || 0;
                 elapsedInput.value = elapsedInDays > 0 ? elapsedInDays.toString() : '';
                 elapsedInput.setAttribute('data-field', 'elapsed_time');
+                elapsedInput.addEventListener('input', () => saveRowChanges(row));
                 elapsedInput.addEventListener('blur', () => saveRowChanges(row));
                 elapsedCell.appendChild(elapsedInput);
                 
@@ -1799,6 +1781,7 @@
                 dateInput.type = 'date';
                 dateInput.value = data.start_date || '';
                 dateInput.setAttribute('data-field', 'start_date');
+                dateInput.addEventListener('change', () => saveRowChanges(row));
                 dateInput.addEventListener('blur', () => saveRowChanges(row));
                 dateCell.appendChild(dateInput);
                 
@@ -1811,6 +1794,21 @@
                 row.appendChild(dateCell);
                 
                 return row;
+            }
+            
+            // Debouncing variables for table updates
+            var updateTableTimeout = null;
+            
+            /**
+             * Central function to handle table updates after node operations
+             */
+            function scheduleTableUpdate() {
+                clearTimeout(updateTableTimeout);
+                updateTableTimeout = setTimeout(function() {
+                    console.log('Executing scheduled table update');
+                    updateActionPlanTable();
+                    updateAllSequenceNumbers();
+                }, 200); // Increased delay to ensure jsMind operations complete
             }
             
             function saveRowChanges(row) {
@@ -1870,8 +1868,11 @@
                     console.log('Saved changes for node:', node.topic, changes);
                     validateActionPlanTimes();
                     
-                    // Update totals when data changes
-                    updateActionPlanTable();
+                    // Debounce table updates to avoid excessive re-rendering
+                    clearTimeout(updateTableTimeout);
+                    updateTableTimeout = setTimeout(() => {
+                        updateActionPlanTable();
+                    }, 300); // 300ms delay
                     
                     // If metadata is currently visible, refresh the specific node's display
                     const metadataCheckbox = document.getElementById('show-dates-times');
@@ -2067,32 +2068,7 @@
                 }
             }
 
-            function saveAllActionPlanChanges() {
-                console.log('🔄 saveAllActionPlanChanges called');
-                const tbody = document.getElementById('action-plan-tbody');
-                if (!tbody) return;
-                
-                const rows = tbody.querySelectorAll('tr');
-                let savedCount = 0;
-                
-                rows.forEach(row => {
-                    saveRowChanges(row);
-                    savedCount++;
-                });
-                
-                // Update sequences and refresh display
-                updateAllSequenceNumbers();
-                
-                // Force refresh of visual nodes using dedicated refresh functions
-                console.log('🔄 Calling forceRefreshAllSequences...');
-                forceRefreshAllSequences();
-                console.log('🔄 Calling forceRefreshAllMetadata...');
-                forceRefreshAllMetadata();
-                console.log('🔄 Refresh complete');
-                
-                alert(`Saved changes for ${savedCount} tasks and updated sequences.`);
-                console.log('Saved all action plan changes and updated sequences');
-            }
+
             
             function validateActionPlanTimes() {
                 const tbody = document.getElementById('action-plan-tbody');
@@ -2883,6 +2859,9 @@
             
             function setupFreeMindShortcuts(jm) {
                 document.addEventListener('keydown', function(e) {
+                    // Debug all keydown events
+                    console.log('>>> KEYDOWN EVENT: Key code:', e.keyCode, 'Key:', e.key, 'Target:', e.target.tagName);
+                    
                     // Check if focus is on an input field in the Action Plan sidebar
                     var activeElement = document.activeElement;
                     var isEditingActionPlan = activeElement.closest('#sidebar-panel') && 
@@ -2928,26 +2907,54 @@
                                 // If it's the root node, create a child instead
                                 if (selected_node.id === 'root') {
                                     var new_id = 'node_' + Date.now();
+                                    console.log('>>> ENTER KEY (ROOT): Creating child node with ID:', new_id);
                                     jm.add_node('root', new_id, 'New Node', {
                                         sequence: 0,
                                         invested_time: 0,
                                         elapsed_time: 0
                                     });
+                                    console.log('>>> ENTER KEY (ROOT): Node created, now selecting...');
                                     jm.select_node(new_id);
-                                    updateActionPlanTable(); // Update sidebar
-                                    jm.begin_edit(new_id);
+                                    
+                                    // Force immediate update like clicking a node does
+                                    setTimeout(function() {
+                                        var newlySelected = jm.get_selected_node();
+                                        console.log('>>> ENTER KEY (ROOT): Selected node after creation:', newlySelected ? newlySelected.topic : 'none');
+                                        if (newlySelected) {
+                                            currentSelectedNode = newlySelected;
+                                            console.log('>>> ENTER KEY (ROOT): Forcing table update...');
+                                            updateActionPlanTable();
+                                            console.log('>>> ENTER KEY (ROOT): Table updated, starting edit...');
+                                            // Then start editing
+                                            jm.begin_edit(new_id);
+                                        }
+                                    }, 100);
                                 } else {
                                     var parent = jm.get_node(selected_node.parent);
                                     if (parent) {
                                         var new_id = 'node_' + Date.now();
+                                        console.log('>>> ENTER KEY: Creating sibling node with ID:', new_id, 'under parent:', parent.id);
                                         jm.add_node(parent.id, new_id, 'New Node', {
                                             sequence: 0,
                                             invested_time: 0,
                                             elapsed_time: 0
                                         });
+                                        console.log('>>> ENTER KEY: Node created, now selecting...');
                                         jm.select_node(new_id);
-                                        updateActionPlanTable(); // Update sidebar
-                                        jm.begin_edit(new_id);
+                                        
+                                        // Force immediate update like clicking a node does
+                                        setTimeout(function() {
+                                            var newlySelected = jm.get_selected_node();
+                                            console.log('>>> ENTER KEY: Selected node after creation:', newlySelected ? newlySelected.topic : 'none');
+                                            if (newlySelected) {
+                                                currentSelectedNode = newlySelected;
+                                                console.log('>>> ENTER KEY: Forcing table update...');
+                                                updateActionPlanTable();
+                                                console.log('>>> ENTER KEY: Table updated, starting edit...');
+                                                // Then start editing
+                                                jm.begin_edit(new_id);
+                                            }
+                                        }, 100);
                                     }
                                 }
                             }
@@ -2955,16 +2962,30 @@
                             
                         case 9: // Tab - Create child node
                             e.preventDefault();
-                            console.log('Creating child node');
+                            console.log('>>> TAB KEY: Creating child node');
                             var new_id = 'node_' + Date.now();
+                            console.log('>>> TAB KEY: Creating child node with ID:', new_id, 'under parent:', selected_node.id);
                             jm.add_node(selected_node.id, new_id, 'New Child', {
                                 sequence: 0,
                                 invested_time: 0,
                                 elapsed_time: 0
                             });
+                            console.log('>>> TAB KEY: Node created, now selecting...');
                             jm.select_node(new_id);
-                            updateActionPlanTable(); // Update sidebar
-                            jm.begin_edit(new_id);
+                            
+                            // Force immediate update like clicking a node does
+                            setTimeout(function() {
+                                var newlySelected = jm.get_selected_node();
+                                console.log('>>> TAB KEY: Selected node after creation:', newlySelected ? newlySelected.topic : 'none');
+                                if (newlySelected) {
+                                    currentSelectedNode = newlySelected;
+                                    console.log('>>> TAB KEY: Forcing table update...');
+                                    updateActionPlanTable();
+                                    console.log('>>> TAB KEY: Table updated, starting edit...');
+                                    // Then start editing
+                                    jm.begin_edit(new_id);
+                                }
+                            }, 100);
                             break;
                             
                         case 113: // F2 - Edit node
@@ -2979,73 +3000,34 @@
                                 console.log('=== DELETE OPERATION START ===');
                                 console.log('Selected node:', selected_node.topic, 'ID:', selected_node.id);
                                 
-                                // Get complete structure before deletion (matching delete-bug-test.html)
-                                var beforeData = jm.get_data();
-                                var beforeNodeCount = beforeData.data.length;
-                                
-                                console.log('Parent:', selected_node.parent ? jm.get_node(selected_node.parent).topic : 'none');
-                                console.log('Children count:', selected_node.children ? selected_node.children.length : 0);
-                                console.log('Total nodes before:', beforeNodeCount);
-                                
-                                // List all nodes before (for debugging)
-                                console.log('Nodes before delete:');
-                                beforeData.data.forEach(function(node) {
-                                    console.log('  - ' + node.topic + ' (id: ' + node.id + ', parent: ' + (node.parentid || 'root') + ')');
-                                });
-                                
-                                // Perform the delete operation (using ID like in working test)
-                                var deleteResult = jm.remove_node(selected_node.id);
-                                
-                                // Get structure after deletion
-                                var afterData = jm.get_data();
-                                var afterNodeCount = afterData.data.length;
-                                
-                                console.log('=== DELETE OPERATION RESULT ===');
-                                console.log('Delete operation result:', deleteResult);
-                                console.log('Total nodes after:', afterNodeCount);
-                                console.log('Nodes removed:', (beforeNodeCount - afterNodeCount));
-                                
-                                // List all nodes after
-                                console.log('Nodes after delete:');
-                                afterData.data.forEach(function(node) {
-                                    console.log('  - ' + node.topic + ' (id: ' + node.id + ', parent: ' + (node.parentid || 'root') + ')');
-                                });
-                                
-                                // Check if any parent nodes were accidentally removed
-                                var removedNodes = [];
-                                beforeData.data.forEach(function(beforeNode) {
-                                    var stillExists = afterData.data.find(function(afterNode) {
-                                        return afterNode.id === beforeNode.id;
-                                    });
-                                    if (!stillExists) {
-                                        removedNodes.push(beforeNode.topic + ' (id: ' + beforeNode.id + ')');
-                                    }
-                                });
-                                
-                                console.log('Nodes that were removed:', removedNodes.join(', '));
-                                
-                                if (removedNodes.length > 1 || (removedNodes.length === 1 && !removedNodes[0].includes(selected_node.id))) {
-                                    console.warn('⚠️  WARNING: More nodes removed than expected!');
-                                } else {
-                                    console.log('✅ Delete operation appears normal');
-                                }
-                                
-                                // Select parent node after deletion
+                                // Store parent reference before deletion
                                 var parent_node = jm.get_node(selected_node.parent);
+                                
+                                // Perform the delete operation
+                                console.log('Performing delete operation...');
+                                var deleteResult = jm.remove_node(selected_node.id);
+                                console.log('Delete operation result:', deleteResult);
+                                
+                                // Select parent node after deletion and update table
                                 if (parent_node) {
                                     setTimeout(function() {
+                                        console.log('Selecting parent node after deletion:', parent_node.topic);
                                         jm.select_node(parent_node.id);
-                                        updateActionPlanTable(); // Update sidebar after deletion
-                                        console.log('Selected parent node after deletion:', parent_node.topic);
+                                        // Trigger the same update that happens on node click
+                                        console.log('>>> DELETE KEY: Triggering table update via select_node event');
+                                        setTimeout(function() {
+                                            currentSelectedNode = jm.get_selected_node();
+                                            updateActionPlanTable();
+                                        }, 50);
                                     }, 50);
                                 } else {
-                                    // If no parent, update sidebar to show no selection
+                                    // If no parent, update table directly
                                     setTimeout(function() {
+                                        console.log('>>> DELETE KEY: Updating table directly (no parent)');
+                                        currentSelectedNode = null;
                                         updateActionPlanTable();
                                     }, 50);
                                 }
-                            } else {
-                                console.log('Cannot delete root node');
                             }
                             break;
                     }
