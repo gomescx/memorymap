@@ -1743,8 +1743,16 @@
                 descInput.type = 'text';
                 descInput.value = node.topic || '';
                 descInput.setAttribute('data-field', 'description');
-                descInput.addEventListener('input', () => saveRowChanges(row));
-                descInput.addEventListener('blur', () => saveRowChanges(row));
+                // Only save changes on blur for description to avoid losing focus on input
+                descInput.addEventListener('input', () => {
+                    row._descDirty = true;
+                });
+                descInput.addEventListener('blur', () => {
+                    if (row._descDirty) {
+                        saveRowChanges(row);
+                        row._descDirty = false;
+                    }
+                });
                 descCell.appendChild(descInput);
                 
                 // Sequence cell (read-only, treated as text)
@@ -1835,15 +1843,11 @@
                 inputs.forEach(input => {
                     const field = input.getAttribute('data-field');
                     const value = input.value.trim();
-                    
                     // Skip inputs without data-field attribute
-                    if (!field) {
-                        return;
-                    }
-                    
+                    if (!field) return;
                     if (field === 'description') {
-                        // Update node topic if changed
-                        if (value && value !== node.topic) {
+                        // Only update node topic on blur
+                        if (value !== node.topic) {
                             jm.update_node(nodeId, value);
                             hasChanges = true;
                             console.log('Updated node description:', value);
@@ -1853,16 +1857,13 @@
                         const data = initNodeData(node);
                         const oldValue = data[field];
                         let newValue;
-                        
                         if (field === 'elapsed_time') {
-                            // elapsed_time is stored in days, no conversion needed
                             newValue = parseFloat(value) || 0;
                         } else if (field.includes('time')) {
                             newValue = parseFloat(value) || 0;
                         } else {
                             newValue = value;
                         }
-                        
                         if (newValue !== oldValue) {
                             data[field] = newValue;
                             changes[field] = newValue;
@@ -1871,17 +1872,15 @@
                         }
                     }
                 });
-                
+
                 if (hasChanges) {
                     console.log('Saved changes for node:', node.topic, changes);
                     validateActionPlanTimes();
-                    
                     // Debounce table updates to avoid excessive re-rendering
                     clearTimeout(updateTableTimeout);
                     updateTableTimeout = setTimeout(() => {
                         updateActionPlanTable();
                     }, 300); // 300ms delay
-                    
                     // If metadata is currently visible, refresh the specific node's display
                     const metadataCheckbox = document.getElementById('show-dates-times');
                     if (metadataCheckbox && metadataCheckbox.checked) {

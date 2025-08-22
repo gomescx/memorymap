@@ -98,43 +98,40 @@ const fs = require('fs');
       });
     };
 
-    // Ensure initial state
+    // Wait for table to be ready
     await page.waitForTimeout(500);
     let rowsBefore = await countRows();
     console.log('Rows before any creation:', rowsBefore);
 
-    // Press Enter 4 times with small delay
-    for (let i = 0; i < 4; i++) {
-      try {
-        await page.keyboard.press('Enter');
-      } catch (e) {
-        console.warn('keyboard.press failed at iteration', i, e.message);
+    // Focus the description input for the Main Node (root)
+    await page.evaluate(() => {
+      const row = document.querySelector('tr[data-node-id="root"]');
+      if (row) {
+        const input = row.querySelector('input[data-field="description"]');
+        if (input) input.focus();
       }
-      await page.waitForTimeout(300);
-    }
-
-    // Wait briefly for any scheduled updates
-    await page.waitForTimeout(800);
-
-    let rowsAfterCreation = await countRows();
-    console.log('Rows after creation (no click):', rowsAfterCreation);
-
-    // Now click on the map center to simulate user click
-    const mapRect = await page.evaluate(() => {
-      const el = document.getElementById('jsmind_container');
-      const r = el.getBoundingClientRect();
-      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     });
+    await page.waitForTimeout(200);
 
-    await page.mouse.click(mapRect.x, mapRect.y);
+    // Type 'Project X' into the description input
+    await page.keyboard.type('Project X', { delay: 100 });
+    await page.waitForTimeout(500);
 
-    // Wait for selection and scheduled updates
-    await page.waitForTimeout(600);
+    // Check if the input still has focus and value is correct
+    const inputState = await page.evaluate(() => {
+      const row = document.querySelector('tr[data-node-id="root"]');
+      if (row) {
+        const input = row.querySelector('input[data-field="description"]');
+        return {
+          value: input ? input.value : null,
+          hasFocus: input === document.activeElement
+        };
+      }
+      return { value: null, hasFocus: false };
+    });
+    console.log('Description input state after typing:', inputState);
 
-    let rowsAfterClick = await countRows();
-    console.log('Rows after click:', rowsAfterClick);
-
-    // Dump the table html for diagnosis
+    // Save table HTML for diagnosis
     const tableHtml = await page.evaluate(() => document.getElementById('action-plan-tbody').innerHTML);
     fs.writeFileSync(path.resolve(__dirname, 'table-debug.html'), tableHtml);
     console.log('Wrote table-debug.html for inspection');
