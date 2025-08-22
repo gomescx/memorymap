@@ -1,0 +1,11 @@
+{
+  "name": "memorymap-ui-tests",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "test:ui": "node tests/ui-refresh.test.js"
+  },
+  "devDependencies": {
+    "puppeteer": "^21.0.0"
+  }
+}

@@ -1,16 +1,10 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!DOCTYPE html><html><head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; connect-src 'none'">
         <title>PEP Memory Map - Pilot</title>
-        <link
-            type="text/css"
-            rel="stylesheet"
-            href="jsmind/style/jsmind.css"
-        />
+        <link type="text/css" rel="stylesheet" href="jsmind/style/jsmind.css">
         <style type="text/css">
             html, body {
                 height: 100%;
@@ -782,13 +776,11 @@
                                     <th class="date-col">Start Date</th>
                                 </tr>
                             </thead>
-                            <tbody id="action-plan-tbody">
-                                <!-- Table rows will be dynamically generated -->
-                            </tbody>
+                            <tbody id="action-plan-tbody"><tr data-node-id="root"><td class="select-col"><input type="checkbox" class="row-select-checkbox" disabled="" title="Main node is always included in exports"></td><td class="description-col node-level-0"><input type="text" data-field="description"></td><td class="sequence-col" style="font-family: monospace; font-size: 11px;"></td><td class="time-col"><input type="number" min="0" step="0.25" data-field="invested_time"></td><td class="time-col"><input type="number" min="0" step="0.25" data-field="elapsed_time"></td><td class="date-col"><input type="date" data-field="start_date"></td></tr></tbody>
                             <tfoot>
                                 <tr id="action-plan-totals" class="totals-row">
                                     <td class="select-col">
-                                        <span id="selected-count">0</span>/<span id="total-rows">0</span>
+                                        <span id="selected-count">1</span>/<span id="total-rows">1</span>
                                     </td>
                                     <td class="description-col"><strong>TOTALS</strong></td>
                                     <td class="sequence-col" id="total-count">0</td>
@@ -824,7 +816,7 @@
             
             <div class="main-container">
                 <div class="mindmap-section">
-                    <div id="jsmind_container"></div>
+                    <div id="jsmind_container"><div class="jsmind-inner jmnode-overflow-hidden" tabindex="1"><canvas class="jsmind" width="760" height="350" style="width: 760px; height: 350px;"></canvas><jmnodes class="theme-primary" style="width: 760px; height: 350px;"><jmnode class="root selected" nodeid="root" style="visibility: visible; left: 306.5px; top: 151.5px;">Main Node</jmnode><jmnode class="jsmind-draggable-shadow-node" style="visibility: hidden; z-index: 3; cursor: move; opacity: 0.7;"></jmnode></jmnodes><canvas width="760" height="350"></canvas></div></div>
                     
                     <!-- New Improved Controls Panel -->
                     <div class="controls-panel">
@@ -2946,11 +2938,7 @@
             }
             
             function setupFreeMindShortcuts(jm) {
-                // Attach the handler to jm.view.e_panel in capture phase so we intercept
-                // the event before jsMind's internal shortcut handler (which listens
-                // on the same panel in bubble phase). This prevents double-handling
-                // where jsMind would also process the Delete key after our logic.
-                jm.view.e_panel.addEventListener('keydown', function(e) {
+                document.addEventListener('keydown', function(e) {
                     // Debug all keydown events
                     console.log('>>> KEYDOWN EVENT: Key code:', e.keyCode, 'Key:', e.key, 'Target:', e.target.tagName);
                     
@@ -2994,7 +2982,6 @@
                         case 13: // Enter - Create sibling node (only when NOT editing)
                             if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
                                 e.preventDefault();
-                                if (e.stopImmediatePropagation) e.stopImmediatePropagation();
                                 console.log('Creating sibling node');
                                 
                                 // If it's the root node, create a child instead
@@ -3067,7 +3054,6 @@
                             
                         case 9: // Tab - Create child node
                             e.preventDefault();
-                            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
                             console.log('>>> TAB KEY: Creating child node');
                             var new_id = 'node_' + Date.now();
                             console.log('>>> TAB KEY: Creating child node with ID:', new_id, 'under parent:', selected_node.id);
@@ -3101,117 +3087,48 @@
                             
                         case 113: // F2 - Edit node
                             e.preventDefault();
-                            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
                             console.log('Editing node');
                             jm.begin_edit(selected_node.id);
                             break;
                             
                         case 46: // Delete - Delete node
-                            // Re-read the live selected node at delete time (avoid stale selected_node)
-                            var liveSelected = jm.get_selected_node();
-                            if (!liveSelected || liveSelected.id === 'root') {
-                                // Nothing to delete or attempt to delete root
-                                break;
-                            }
-
-                            // Prevent other listeners (including jsMind internal shortcuts) from handling this key
-                            e.preventDefault();
-                            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-                            console.log('=== DELETE OPERATION START ===');
-                            console.log('Live selected node:', liveSelected.topic, 'ID:', liveSelected.id);
-
-                            // Store parent reference before deletion (handle parent being id or object)
-                            var parent_node = null;
-                            try {
-                                if (!liveSelected) {
-                                    parent_node = null;
-                                } else if (typeof liveSelected.parent === 'string') {
-                                    parent_node = jm.get_node(liveSelected.parent);
-                                } else if (liveSelected.parent && typeof liveSelected.parent === 'object' && liveSelected.parent.id) {
-                                    parent_node = jm.get_node(liveSelected.parent.id);
-                                } else {
-                                    parent_node = null;
-                                }
-                            } catch (pnErr) {
-                                console.warn('Failed to resolve parent_node for delete operation', pnErr);
-                                parent_node = null;
-                            }
-
-                            try {
-                                // Re-read the node from jm to ensure we have the latest children list
-                                var nodeToDelete = jm.get_node(liveSelected.id);
-                                if (!nodeToDelete) {
-                                    console.warn('Node to delete not found at re-read:', liveSelected.id);
-                                }
-
-                                // If the node has children, reparent them to the deleted node's parent
-                                if (nodeToDelete && nodeToDelete.children && nodeToDelete.children.length > 0) {
-                                    // Determine parent id robustly
-                                    var parentId = null;
-                                    if (parent_node && parent_node.id) {
-                                        parentId = parent_node.id;
-                                    } else if (nodeToDelete.parent && typeof nodeToDelete.parent === 'string') {
-                                        parentId = nodeToDelete.parent;
-                                    } else if (nodeToDelete.parent && typeof nodeToDelete.parent === 'object' && nodeToDelete.parent.id) {
-                                        parentId = nodeToDelete.parent.id;
-                                    } else {
-                                        parentId = 'root';
-                                    }
-
-                                    console.log('Reparenting', nodeToDelete.children.length, 'children to parent id:', parentId);
-                                    var childrenToMove = nodeToDelete.children.slice();
-                                    childrenToMove.forEach(function(child) {
-                                        try {
-                                            // child may be a node object or an id string - normalize to id
-                                            var childId = (typeof child === 'string') ? child : (child && child.id ? child.id : null);
-                                            if (!childId) {
-                                                console.warn('Skipping move: could not derive child id from', child);
-                                                return;
-                                            }
-                                            if (childId === parentId) {
-                                                console.warn('Skipping move: childId equals parentId', childId);
-                                                return;
-                                            }
-                                            jm.move_node(childId, '_last_', parentId);
-                                            console.log('Moved child', childId, 'to parent', parentId);
-                                        } catch (moveErr) {
-                                            console.warn('Failed to move child', child, moveErr);
-                                        }
-                                    });
-                                } else {
-                                    console.log('No children to reparent for node:', liveSelected.id);
-                                }
-
-                                // Perform the delete operation on the live selected node
-                                console.log('Performing delete operation on nodeToDelete.id:', nodeToDelete ? nodeToDelete.id : liveSelected.id);
-                                var deleteResult = jm.remove_node(nodeToDelete ? nodeToDelete.id : liveSelected.id);
+                            if (selected_node.id !== 'root') {
+                                e.preventDefault();
+                                console.log('=== DELETE OPERATION START ===');
+                                console.log('Selected node:', selected_node.topic, 'ID:', selected_node.id);
+                                
+                                // Store parent reference before deletion
+                                var parent_node = jm.get_node(selected_node.parent);
+                                
+                                // Perform the delete operation
+                                console.log('Performing delete operation...');
+                                var deleteResult = jm.remove_node(selected_node.id);
                                 console.log('Delete operation result:', deleteResult);
-                            } catch (delErr) {
-                                console.warn('Error during delete operation:', delErr);
-                            }
-
-                            // Select parent node after deletion and update table
-                            if (parent_node) {
-                                setTimeout(function() {
-                                    console.log('Selecting parent node after deletion:', parent_node.topic);
-                                    jm.select_node(parent_node.id);
-                                    console.log('>>> DELETE KEY: Triggering table update via select_node event');
+                                
+                                // Select parent node after deletion and update table
+                                if (parent_node) {
                                     setTimeout(function() {
-                                        currentSelectedNode = jm.get_selected_node();
+                                        console.log('Selecting parent node after deletion:', parent_node.topic);
+                                        jm.select_node(parent_node.id);
+                                        // Trigger the same update that happens on node click
+                                        console.log('>>> DELETE KEY: Triggering table update via select_node event');
+                                        setTimeout(function() {
+                                            currentSelectedNode = jm.get_selected_node();
+                                            updateActionPlanTable();
+                                        }, 50);
+                                    }, 50);
+                                } else {
+                                    // If no parent, update table directly
+                                    setTimeout(function() {
+                                        console.log('>>> DELETE KEY: Updating table directly (no parent)');
+                                        currentSelectedNode = null;
                                         updateActionPlanTable();
                                     }, 50);
-                                }, 50);
-                            } else {
-                                setTimeout(function() {
-                                    console.log('>>> DELETE KEY: Updating table directly (no parent)');
-                                    currentSelectedNode = null;
-                                    updateActionPlanTable();
-                                }, 50);
+                                }
                             }
                             break;
                     }
-                }, true);
+                });
                 
                 // Also handle clicks to ensure node selection works
                 document.getElementById('jsmind_container').addEventListener('click', function(e) {
@@ -3263,5 +3180,6 @@
                 initializeMindMap();
             });
         </script>
-    </body>
-</html>
+    
+
+</body></html>

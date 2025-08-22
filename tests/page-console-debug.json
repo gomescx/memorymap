@@ -1,0 +1,182 @@
+[
+  {
+    "type": "console",
+    "text": "The Content Security Policy directive 'frame-ancestors' is ignored when delivered via a <meta> element."
+  },
+  {
+    "type": "console",
+    "text": "DEBUG updateActionPlanTable: collected nodes count= 1 ids= JSHandle@array"
+  },
+  {
+    "type": "console",
+    "text": "Selection updated: 1/1 rows selected"
+  },
+  {
+    "type": "console",
+    "text": "Updated totals: JSHandle@object"
+  },
+  {
+    "type": "console",
+    "text": "Updated Action Plan table with 1 nodes"
+  },
+  {
+    "type": "console",
+    "text": "✓ Sequence event listeners set up"
+  },
+  {
+    "type": "console",
+    "text": "setupNodeElementObserver: observing jmnodes container"
+  },
+  {
+    "type": "console",
+    "text": "Mind map initialized with Main Node"
+  },
+  {
+    "type": "console",
+    "text": "jsMind event: 2 JSHandle@object"
+  },
+  {
+    "type": "console",
+    "text": "jsMind event: 1 JSHandle@object"
+  },
+  {
+    "type": "console",
+    "text": "Failed to load resource: the server responded with a status of 404 (File not found)"
+  },
+  {
+    "type": "console",
+    "text": "Node DOM changed — refreshing Action Plan table"
+  },
+  {
+    "type": "console",
+    "text": "=== STARTING ROBUST SEQUENCE UPDATE ==="
+  },
+  {
+    "type": "console",
+    "text": "jm exists: true"
+  },
+  {
+    "type": "console",
+    "text": "Root node found: Main Node"
+  },
+  {
+    "type": "console",
+    "text": "✓ Set sequence \"\" for \"Main Node\""
+  },
+  {
+    "type": "console",
+    "text": "Root has no children"
+  },
+  {
+    "type": "console",
+    "text": "✓ Sequence update completed successfully"
+  },
+  {
+    "type": "console",
+    "text": "DEBUG updateActionPlanTable: collected nodes count= 1 ids= JSHandle@array"
+  },
+  {
+    "type": "console",
+    "text": "Selection updated: 1/1 rows selected"
+  },
+  {
+    "type": "console",
+    "text": "Updated totals: JSHandle@object"
+  },
+  {
+    "type": "console",
+    "text": "Updated Action Plan table with 1 nodes"
+  },
+  {
+    "type": "console",
+    "text": "DEBUG updateActionPlanTable: collected nodes count= 1 ids= JSHandle@array"
+  },
+  {
+    "type": "console",
+    "text": "Selection updated: 1/1 rows selected"
+  },
+  {
+    "type": "console",
+    "text": "Updated totals: JSHandle@object"
+  },
+  {
+    "type": "console",
+    "text": "Updated Action Plan table with 1 nodes"
+  },
+  {
+    "type": "console",
+    "text": "Root node selected"
+  },
+  {
+    "type": "console",
+    "text": "DEBUG updateActionPlanTable: collected nodes count= 1 ids= JSHandle@array"
+  },
+  {
+    "type": "console",
+    "text": "Selection updated: 1/1 rows selected"
+  },
+  {
+    "type": "console",
+    "text": "Updated totals: JSHandle@object"
+  },
+  {
+    "type": "console",
+    "text": "Updated Action Plan table with 1 nodes"
+  },
+  {
+    "type": "console",
+    "text": "jsMind event: 4 JSHandle@object"
+  },
+  {
+    "type": "console",
+    "text": "Calling initial updateAllSequenceNumbers..."
+  },
+  {
+    "type": "console",
+    "text": "=== STARTING ROBUST SEQUENCE UPDATE ==="
+  },
+  {
+    "type": "console",
+    "text": "jm exists: true"
+  },
+  {
+    "type": "console",
+    "text": "Root node found: Main Node"
+  },
+  {
+    "type": "console",
+    "text": "✓ Set sequence \"\" for \"Main Node\""
+  },
+  {
+    "type": "console",
+    "text": "Root has no children"
+  },
+  {
+    "type": "console",
+    "text": "✓ Sequence update completed successfully"
+  },
+  {
+    "type": "console",
+    "text": "DEBUG updateActionPlanTable: collected nodes count= 1 ids= JSHandle@array"
+  },
+  {
+    "type": "console",
+    "text": "Selection updated: 1/1 rows selected"
+  },
+  {
+    "type": "console",
+    "text": "Updated totals: JSHandle@object"
+  },
+  {
+    "type": "console",
+    "text": "Updated Action Plan table with 1 nodes"
+  },
+  {
+    "type": "console",
+    "text": "=== CHECKING INITIAL SEQUENCES ==="
+  },
+  {
+    "type": "console",
+    "text": "DEBUG: jm.get_data() returned unexpected shape JSHandle@object"
+  }
+]
