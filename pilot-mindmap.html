@@ -873,7 +873,7 @@
                                     🔄 Update Sequences
                                 </button>
                             </div>
-                            
+
                             <div class="action-group">
                                 <h3>💾 Data Management</h3>
                                 <button onclick="downloadMindMap()" class="btn btn-success">
@@ -886,6 +886,21 @@
                                     🌟 Sample Map
                                 </button>
                                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
+                            </div>
+
+                            <div class="action-group">
+                                <h3>📣 Feedback & Suggestions</h3>
+                                <button 
+                                    class="btn btn-primary" 
+                                    style="background: #24292e; color: #fff;" 
+                                    onclick="window.open('https://github.com/gomescx/memorymap/issues/new', '_blank')"
+                                    title="This will open a simple form where you can send feedback directly to the project team."
+                                >
+                                    📣 Report a Problem or Suggest an Improvement
+                                </button>
+                                <p class="help-text">
+                                    Click to open a feedback form. You can describe any problems or ideas for improvement. No technical knowledge needed.
+                                </p>
                             </div>
                         </div>
 
