@@ -450,6 +450,29 @@
                 color: #007bff;
             }
 
+            /* Drag handle column */
+            .drag-handle-col {
+                width: 28px;
+                text-align: center;
+                vertical-align: middle;
+                cursor: default;
+                user-select: none;
+            }
+
+            .drag-handle {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                line-height: 20px;
+                text-align: center;
+                border-radius: 4px;
+                color: #495057;
+                cursor: grab;
+                font-size: 14px;
+            }
+
+            .drag-handle:active { cursor: grabbing; }
+
             /* Responsive adjustments for smaller sidebar widths */
             @media (max-width: 1200px) {
                 .action-plan-table .select-col {
@@ -744,6 +767,18 @@
                     max-height: 1000px;
                 }
             }
+            /* Drag & drop row reordering visuals */
+            .action-plan-table tr.dragging {
+                opacity: 0.5;
+            }
+
+            .action-plan-table tr.drag-over-top td {
+                border-top: 3px solid #007bff;
+            }
+
+            .action-plan-table tr.drag-over-bottom td {
+                border-bottom: 3px solid #007bff;
+            }
         </style>
     </head>
 
@@ -772,6 +807,7 @@
                         <table class="action-plan-table" id="action-plan-table">
                             <thead>
                                 <tr>
+                                    <th class="drag-handle-col"></th>
                                     <th class="select-col">
                                         <input type="checkbox" id="select-all-checkbox" title="Select/Deselect All">
                                     </th>
@@ -787,6 +823,7 @@
                             </tbody>
                             <tfoot>
                                 <tr id="action-plan-totals" class="totals-row">
+                                    <td class="drag-handle-col">&nbsp;</td>
                                     <td class="select-col">
                                         <span id="selected-count">0</span>/<span id="total-rows">0</span>
                                     </td>
@@ -1710,6 +1747,15 @@
                 const row = document.createElement('tr');
                 row.setAttribute('data-node-id', node.id);
                 
+                // Drag handle cell (visual grip)
+                const handleCell = document.createElement('td');
+                handleCell.className = 'drag-handle-col';
+                const handle = document.createElement('span');
+                handle.className = 'drag-handle';
+                handle.title = 'Drag to reorder';
+                handle.textContent = '⋮';
+                handleCell.appendChild(handle);
+
                 // Selection checkbox cell
                 const selectCell = document.createElement('td');
                 selectCell.className = 'select-col';
@@ -1801,14 +1847,39 @@
                 dateInput.addEventListener('blur', () => saveRowChanges(row));
                 dateCell.appendChild(dateInput);
                 
-                // Assemble row
+                // Assemble row (handle first)
+                row.appendChild(handleCell);
                 row.appendChild(selectCell);
                 row.appendChild(descCell);
                 row.appendChild(seqCell);
                 row.appendChild(investedCell);
                 row.appendChild(elapsedCell);
                 row.appendChild(dateCell);
-                
+                // Make the handle the drag start target (row is draggable but only via handle)
+                // ensure the row itself is not draggable by default to avoid accidental drags
+                row.removeAttribute('draggable');
+                // Wire events on the handle: find outer drag functions (they exist in closure)
+                try {
+                    // use event listeners compatible with DataTransfer APIs
+                    handle.addEventListener('dragstart', function(e){
+                        // delegate to module's onDragStart, ensuring `this` is the row
+                        onDragStart.call(row, e);
+                    });
+                    handle.addEventListener('dragover', function(e){
+                        onDragOver.call(row, e);
+                    });
+                    handle.addEventListener('drop', function(e){
+                        onDrop.call(row, e);
+                    });
+                    handle.addEventListener('dragend', function(e){
+                        onDragEnd.call(row, e);
+                    });
+                    // make the handle itself draggable so dragstart fires
+                    handle.setAttribute('draggable', 'true');
+                } catch (err) {
+                    console.warn('Failed to attach handle drag listeners', err);
+                }
+
                 return row;
             }
             
@@ -3220,6 +3291,169 @@
                     }, 10);
                 });
             }
+
+            // ===== ROW DRAG & DROP FOR ACTION PLAN =====
+
+            (function(){
+                var draggedRow = null;
+
+                function isTableRow(el){
+                    return el && el.nodeType === 1 && el.tagName.toLowerCase() === 'tr';
+                }
+
+                function onDragStart(e){
+                    draggedRow = this;
+                    this.classList.add('dragging');
+                    try { if (e.dataTransfer) e.dataTransfer.setData('text/plain', this.getAttribute('data-node-id') || ''); } catch(err){}
+                    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+                }
+
+                function clearDragOver(rows){
+                    rows.forEach(function(r){ r.classList.remove('drag-over-top','drag-over-bottom'); });
+                }
+
+                function onDragOver(e){
+                    e.preventDefault(); // allow drop
+                    var targetRow = this;
+                    if (!isTableRow(targetRow) || targetRow === draggedRow) return;
+                    var rect = targetRow.getBoundingClientRect();
+                    var offset = e.clientY - rect.top;
+                    var before = offset < rect.height / 2;
+                    clearDragOver([targetRow]);
+                    targetRow.classList.add(before ? 'drag-over-top' : 'drag-over-bottom');
+                    // move draggedRow for immediate visual feedback
+                    var parent = targetRow.parentNode;
+                    if (before) {
+                        parent.insertBefore(draggedRow, targetRow);
+                    } else {
+                        parent.insertBefore(draggedRow, targetRow.nextSibling);
+                    }
+                }
+
+                function syncDomOrderToModel(){
+                    // Sync DOM order back into jsMind model by interpreting the table's indentation
+                    try {
+                        var tbody = document.getElementById('action-plan-tbody');
+                        if (tbody && jm && jm.move_node) {
+                            var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+
+                            function getRowLevel(row){
+                                var desc = row.querySelector('.description-col');
+                                if (!desc) return 0;
+                                for (var i=0;i<desc.classList.length;i++){
+                                    var cls = desc.classList[i];
+                                    var m = cls.match(/^node-level-(\d+)$/);
+                                    if (m) return parseInt(m[1],10);
+                                }
+                                return 0;
+                            }
+
+                            // For each row in DOM order, determine parent by finding the nearest previous row with level one less
+                            rows.forEach(function(row){
+                                var nodeId = row.getAttribute('data-node-id');
+                                if (!nodeId || nodeId === 'root') return;
+                                var level = getRowLevel(row);
+
+                                // Find parent id: nearest previous row with level < current level
+                                var parentId = 'root';
+                                for (var i = rows.indexOf(row) - 1; i >= 0; i--) {
+                                    var prev = rows[i];
+                                    var prevLevel = getRowLevel(prev);
+                                    if (prevLevel < level) {
+                                        parentId = prev.getAttribute('data-node-id') || 'root';
+                                        break;
+                                    }
+                                }
+
+                                // Move node as last child of parent to preserve DOM ordering when processed top-to-bottom
+                                try {
+                                    jm.move_node(nodeId, '_last_', parentId);
+                                } catch (moveErr) {
+                                    console.warn('move_node failed for', nodeId, parentId, moveErr);
+                                }
+                            });
+                        }
+                    } catch(err) {
+                        console.warn('Error syncing DOM order to jm model', err);
+                    }
+
+                    // trigger downstream updates (sequences, table totals)
+                    setTimeout(function(){
+                        try { if (typeof updateAllSequenceNumbers === 'function') updateAllSequenceNumbers(); } catch(e){}
+                        try { if (typeof scheduleTableUpdate === 'function') scheduleTableUpdate(); } catch(e){}
+                        try { if (typeof updateActionPlanTotals === 'function') {
+                            // Recompute totals from current model order
+                            var allNodes = [];
+                            var root = jm && jm.get_node ? jm.get_node('root') : null;
+                            if (root) collectAllNodes(root, allNodes, 0);
+                            updateActionPlanTotals(allNodes);
+                        }} catch(e){}
+                    }, 50);
+                }
+
+                function onDrop(e){
+                    e.preventDefault();
+                    finishDrag();
+                }
+
+                function onDragEnd(){
+                    finishDrag();
+                    // ensure model sync in case drop event didn't fire
+                    try { syncDomOrderToModel(); } catch(e){}
+                }
+
+                function finishDrag(){
+                    var rows = Array.prototype.slice.call(document.querySelectorAll('.action-plan-table tbody tr'));
+                    clearDragOver(rows);
+                    if (draggedRow) draggedRow.classList.remove('dragging');
+                    draggedRow = null;
+                }
+
+                function makeRowDraggable(row){
+                    if (!row || !isTableRow(row)) return;
+                    // Prefer drag from explicit handle element
+                    var handle = row.querySelector('.drag-handle');
+                    if (!handle) return;
+
+                    // ensure handle is draggable
+                    handle.setAttribute('draggable','true');
+
+                    // remove existing delegated listeners by cloning
+                    var newHandle = handle.cloneNode(true);
+                    handle.parentNode.replaceChild(newHandle, handle);
+
+                    newHandle.addEventListener('dragstart', function(e){ onDragStart.call(row, e); });
+                    newHandle.addEventListener('dragover', function(e){ onDragOver.call(row, e); });
+                    newHandle.addEventListener('drop', function(e){ onDrop.call(row, e); });
+                    newHandle.addEventListener('dragend', function(e){ onDragEnd.call(row, e); });
+                }
+
+                function initDragForExistingRows(){
+                    var tbody = document.getElementById('action-plan-tbody');
+                    if (!tbody) return;
+                    Array.prototype.forEach.call(tbody.querySelectorAll('tr'), makeRowDraggable);
+                    // Fallback: listen for drops on tbody
+                    tbody.removeEventListener('drop', function(){});
+                    tbody.addEventListener('drop', function(e){
+                        e.preventDefault();
+                        finishDrag();
+                        try { syncDomOrderToModel(); } catch(err){}
+                    });
+                    // observe additions
+                    var mo = new MutationObserver(function(mutations){
+                        mutations.forEach(function(m){
+                            Array.prototype.forEach.call(m.addedNodes || [], function(node){
+                                if (isTableRow(node)) makeRowDraggable(node);
+                                if (node && node.querySelectorAll) Array.prototype.forEach.call(node.querySelectorAll('tr'), makeRowDraggable);
+                            });
+                        });
+                    });
+                    mo.observe(tbody, { childList: true, subtree: true });
+                }
+
+                document.addEventListener('DOMContentLoaded', initDragForExistingRows);
+                window.addEventListener('load', function(){ setTimeout(initDragForExistingRows, 50); });
+            })();
 
             // ===== UI TOGGLE FUNCTIONS =====
             
