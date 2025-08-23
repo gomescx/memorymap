@@ -1112,16 +1112,28 @@
                 jm.show(sampleMind);
                 
                 // Add APS project deliverables with a delay to ensure proper rendering
+                // | Milestone Phase                  | Deliverable / Outcome                          | Due Date    | Invested Time (hrs) |
+                // | -------------------------------- | ---------------------------------------------- | ----------- | ------------------- |
+                // | **Project Initiation**           | Project brief, stakeholder identification      | 05-Sep-2025 | 40 hrs              |
+                // | **Research & Consultation**      | Literature review, stakeholder workshops       | 30-Sep-2025 | 120 hrs             |
+                // | **Draft Policy Development**     | Draft policy paper and options analysis        | 20-Oct-2025 | 160 hrs             |
+                // | **Executive Review**             | EL2 / SES review and endorsement               | 31-Oct-2025 | 40 hrs              |
+                // | **Public / Sector Consultation** | Circulate draft policy, gather feedback        | 20-Nov-2025 | 100 hrs             |
+                // | **Final Policy & Approval**      | Finalised policy, approval by governance board | 05-Dec-2025 | 60 hrs              |
+                // | **Implementation Planning**      | Implementation plan with resourcing & comms    | 15-Dec-2025 | 80 hrs              |
+                // | **Close & Handover**             | Project report, lessons learned, handover docs | 20-Dec-2025 | 30 hrs              |
+
+
                 setTimeout(function() {
                     // Add main project deliverables (simplified - no sub-tasks)
-                    jm.add_node('root', 'brief', 'Project Brief & Stakeholde ...');
-                    jm.add_node('root', 'literature', 'Literature Review & Works ...'); 
-                    jm.add_node('root', 'draft', 'Draft Policy Paper & Optio ...');
-                    jm.add_node('root', 'review', 'EL2/SES Review & Endors ...');
-                    jm.add_node('root', 'feedback', 'Circulate Draft & Gather F ...');
-                    jm.add_node('root', 'final', 'Finalised Policy & Approval');
-                    jm.add_node('root', 'implementation', 'Implementation Plan');
-                    jm.add_node('root', 'report', 'Project Report & Handover');
+                    jm.add_node('root', 'brief', 'Project Brief & Stakeholder Identification'); 
+                    jm.add_node('root', 'literature', 'Literature review, stakeholder workshops '); 
+                    jm.add_node('root', 'draft', 'Draft Policy Paper & Option Analysis');
+                    jm.add_node('root', 'review', 'EL2/SES Review & Endorsement');
+                    jm.add_node('root', 'feedback', 'Circulate Draft & Gather Feedback');
+                    jm.add_node('root', 'final', 'Finalised Policy & Approval by Governance Board');
+                    jm.add_node('root', 'implementation', 'Implementation Plan with Resourcing & Comms');
+                    jm.add_node('root', 'report', 'Project Report, lessons learned, handover docs');
                     
                     // Add metadata with real APS project data (simplified)
                     setTimeout(function() {
@@ -1817,8 +1829,13 @@
                 investedInput.step = '0.25';
                 investedInput.value = data.invested_time || '';
                 investedInput.setAttribute('data-field', 'invested_time');
-                investedInput.addEventListener('input', () => saveRowChanges(row));
+                // Only save on blur or Enter key
                 investedInput.addEventListener('blur', () => saveRowChanges(row));
+                investedInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        investedInput.blur(); // triggers save
+                    }
+                });
                 investedCell.appendChild(investedInput);
                 
                 // Elapsed time cell
@@ -1832,8 +1849,13 @@
                 const elapsedInDays = parseFloat(data.elapsed_time) || 0;
                 elapsedInput.value = elapsedInDays > 0 ? elapsedInDays.toString() : '';
                 elapsedInput.setAttribute('data-field', 'elapsed_time');
-                elapsedInput.addEventListener('input', () => saveRowChanges(row));
+                // Only save on blur or Enter key
                 elapsedInput.addEventListener('blur', () => saveRowChanges(row));
+                elapsedInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        elapsedInput.blur(); // triggers save
+                    }
+                });
                 elapsedCell.appendChild(elapsedInput);
                 
                 // Start date cell
