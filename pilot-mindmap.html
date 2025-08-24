@@ -779,13 +779,105 @@
             .action-plan-table tr.drag-over-bottom td {
                 border-bottom: 3px solid #007bff;
             }
+        /* Top Bar Modern Flex Layout */
+        .topbar-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 32px;
+            padding: 0 0 18px 0;
+            margin-bottom: 8px;
+        }
+        .topbar-title {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .topbar-title h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 0 0 2px 0;
+            color: #222;
+            letter-spacing: -1px;
+        }
+        .topbar-title p {
+            color: #666;
+            font-size: 1rem;
+            margin: 0;
+        }
+        .topbar-actions {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+        .topbar-btn {
+            min-width: 150px;
+            font-size: 1rem;
+            padding: 10px 18px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            transition: background 0.15s, box-shadow 0.15s, color 0.15s;
+        }
+        .btn-sample.topbar-btn {
+            background: #ffc107;
+            color: #333;
+        }
+        .btn-sample.topbar-btn:hover {
+            background: #e0a800;
+            color: #222;
+        }
+        .topbar-btn-icon {
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+        @media (max-width: 900px) {
+            .topbar-flex {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .topbar-actions {
+                justify-content: flex-start;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .topbar-title h1 {
+                font-size: 1.3rem;
+            }
+            .topbar-title p {
+                font-size: 0.95rem;
+            }
+            .topbar-btn {
+                min-width: 120px;
+                font-size: 0.95rem;
+                padding: 8px 10px;
+            }
+        }
         </style>
     </head>
 
     <body>
-        <div class="header">
-            <h1>PEP Memory Map - Pilot</h1>
-            <p>Clean mind mapping interface with FreeMind-like keyboard shortcuts</p>
+        <!-- Unified Top Bar -->
+        <div class="topbar-flex">
+            <div class="topbar-title">
+                <h1>PEP Memory Map – Pilot</h1>
+                <p>Clean mind mapping interface with FreeMind-like keyboard shortcuts</p>
+            </div>
+            <div class="topbar-actions">
+                <button onclick="downloadMindMap()" class="btn btn-success topbar-btn">
+                    <span class="topbar-btn-icon">📥</span> Save Memory Map
+                </button>
+                <button onclick="document.getElementById('file-input').click()" class="btn btn-info topbar-btn">
+                    <span class="topbar-btn-icon">📤</span> Load Memory Map
+                </button>
+                <button onclick="createSampleMap()" class="btn btn-sample topbar-btn">
+                    <span class="topbar-btn-icon">🌟</span> Sample Map
+                </button>
+                <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
+            </div>
         </div>
         
         <div class="main-content" id="main-content">
@@ -867,22 +959,6 @@
                     <div class="controls-panel">
                         <!-- Primary Actions Bar -->
                         <div class="primary-actions">
-
-
-                            <div class="action-group">
-                                <h3>💾 Data Management</h3>
-                                <button onclick="downloadMindMap()" class="btn btn-success">
-                                    📥 Save Memory Map
-                                </button>
-                                <button onclick="document.getElementById('file-input').click()" class="btn btn-info">
-                                    📤 Load Memory Map
-                                </button>
-                                <button onclick="createSampleMap()" class="btn btn-sample">
-                                    🌟 Sample Map
-                                </button>
-                                <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
-                            </div>
-
                             <div class="action-group">
                                 <h3>📣 Feedback & Suggestions</h3>
                                 <button 

@@ -6,6 +6,6 @@
     "test:ui": "node tests/ui-refresh.test.js"
   },
   "devDependencies": {
-    "puppeteer": "^21.0.0"
+    "puppeteer": "^24.17.0"
   }
 }
