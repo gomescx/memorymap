@@ -856,6 +856,23 @@
                 padding: 8px 10px;
             }
         }
+        .topbar-icon-btn {
+            background: none;
+            border: none;
+            padding: 0 8px;
+            margin: 0;
+            box-shadow: none;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .topbar-icon-btn:hover,
+        .topbar-icon-btn:focus {
+            background: #e6f4ea;
+            outline: none;
+        }
         </style>
     </head>
 
@@ -867,22 +884,37 @@
                 <p>Clean mind mapping interface with FreeMind-like keyboard shortcuts</p>
             </div>
             <div class="topbar-actions">
-                <button onclick="downloadMindMap()" class="btn btn-success topbar-btn">
-                    <span class="topbar-btn-icon">📥</span> Save Memory Map
+                <button
+                    onclick="downloadMindMap()"
+                    class="topbar-icon-btn"
+                    title="Save Memory Map"
+                    aria-label="Save Memory Map"
+                >
+                    <span class="topbar-btn-icon" style="font-size: 1.7em; margin: 0;">💾</span>
                 </button>
-                <button onclick="document.getElementById('file-input').click()" class="btn btn-info topbar-btn">
-                    <span class="topbar-btn-icon">📤</span> Load Memory Map
+                <button
+                    onclick="document.getElementById('file-input').click()"
+                    class="topbar-icon-btn"
+                    title="Load Memory Map"
+                    aria-label="Load Memory Map"
+                >
+                    <span class="topbar-btn-icon" style="font-size: 1.7em; margin: 0;">📂</span>
                 </button>
-                <button onclick="createSampleMap()" class="btn btn-sample topbar-btn">
-                    <span class="topbar-btn-icon">🌟</span> Sample Map
+                <button
+                    onclick="createSampleMap()"
+                    class="topbar-icon-btn"
+                    title="Sample Map"
+                    aria-label="Sample Map"
+                >
+                    <span class="topbar-btn-icon" style="font-size: 1.7em; margin: 0;">🧩</span>
                 </button>
                 <button 
-                    class="btn btn-primary topbar-btn" 
-                    style="background: #24292e; color: #fff;" 
                     onclick="window.open('https://github.com/gomescx/memorymap/issues/new', '_blank')"
-                    title="Open the GitHub issues page to report a problem or suggest an improvement."
+                    class="topbar-icon-btn"
+                    title="Issues & Suggestions"
+                    aria-label="Issues & Suggestions"
                 >
-                    <span class="topbar-btn-icon">📣</span> Issues & Suggestions
+                    <span class="topbar-btn-icon" style="font-size: 1.7em; margin: 0;">💬</span>
                 </button>
                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
             </div>
