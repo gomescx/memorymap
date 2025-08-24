@@ -723,19 +723,66 @@
             }
 
             /* Responsive adjustments */
-            @media (max-width: 768px) {
-                .primary-actions {
-                    flex-direction: column;
-                    gap: 20px;
+            @media (max-width: 900px) {
+                .cards-row {
+                    flex-direction: column !important;
+                    flex-wrap: wrap !important;
+                    gap: 18px;
                 }
-                
-                .settings-row {
-                    flex-direction: column;
-                    gap: 20px;
+                .shortcuts-card, .view-options-card {
+                    max-width: 100%;
                 }
+            }
                 
                 .shortcut-grid {
-                    grid-template-columns: 1fr;
+                    /* allow the shortcut items to flow horizontally and wrap as space requires */
+                    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                    gap: 10px;
+                }
+
+                /* Cards row layout: Keyboard Shortcuts (flexible) and View Options (fixed) */
+                .cards-row {
+                    display: flex;
+                    gap: 24px;
+                    align-items: flex-start;
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+
+                .shortcuts-card {
+                    flex: 1 1 auto; /* take remaining space */
+                    min-width: 220px;
+                    background: white;
+                    border: 1px solid #dee2e6;
+                    border-radius: 8px;
+                    padding: 14px;
+                    box-sizing: border-box;
+                }
+
+                .view-options-card {
+                    /* fixed width approximately equal to the width of the longest checkbox label */
+                    flex: 0 0 360px;
+                    max-width: 360px;
+                    background: white;
+                    border: 1px solid #dee2e6;
+                    border-radius: 8px;
+                    padding: 14px;
+                    box-sizing: border-box;
+                }
+
+                /* Small screens: stack vertically and allow view-options to expand */
+                @media (max-width: 900px) {
+                    .cards-row {
+                        flex-direction: column !important;
+                        gap: 18px;
+                    }
+                    .view-options-card {
+                        flex: 1 1 auto;
+                        max-width: 100%;
+                    }
+                    .shortcut-grid {
+                        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                    }
                 }
                 
                 .action-group {
@@ -748,7 +795,7 @@
                     min-height: 300px;
                     max-height: 500px;
                 }
-            }
+            
             
             /* Additional responsive height adjustments */
             @media (max-height: 600px) {
@@ -994,70 +1041,43 @@
             <div class="main-container">
                 <div class="mindmap-section">
                     <div id="jsmind_container"></div>
-                    
-                    <!-- New Improved Controls Panel -->
-                    <div class="controls-panel">
-                        <!-- Primary Actions Bar -->
-                        <!-- Feedback & Suggestions section removed and button moved to top bar -->
-
-                        <!-- Settings Panel (Collapsible) -->
-                        <div class="settings-panel">
-                            <button class="settings-toggle" onclick="toggleSettings()">
-                                ⚙️ View Options <span id="settings-arrow">▼</span>
-                            </button>
-                            
-                            <div id="settings-content" class="settings-content">
-                                <div class="settings-row">
-                                    <div class="setting-group">
-                                        <h4>👁️ Display Options</h4>
-                                        <label class="checkbox-label">
-                                            <input type="checkbox" id="show-sequences" onchange="toggleSequenceDisplay()">
-                                            <span>Show Sequence Numbers</span>
-                                        </label>
-                                        <label class="checkbox-label">
-                                            <input type="checkbox" id="show-dates-times" onchange="toggleFullMetadata()">
-                                            <span>Show Invested Elapsed Time and Dates</span>
-                                        </label>
-                                    </div>
-                                </div>
+                    <div class="cards-row" style="display: flex; flex-wrap: wrap; gap: 32px; justify-content: center; align-items: flex-start; margin: 32px 0 0 0;">
+                        <!-- Keyboard Shortcuts Card -->
+                        <div class="shortcuts-card">
+                            <div class="shortcuts-header">
+                                <span class="shortcuts-icon">❓</span>
+                                <span class="shortcuts-title">Keyboard Shortcuts</span>
+                            </div>
+                            <div class="shortcut-grid">
+                                <div class="shortcut-item"><kbd>Enter</kbd><span>Create sibling</span></div>
+                                <div class="shortcut-item"><kbd>Tab</kbd><span>Create child</span></div>
+                                <div class="shortcut-item"><kbd>Double-Click</kbd><span>Edit node</span></div>
+                                <div class="shortcut-item"><kbd>Delete</kbd><span>Delete node</span></div>
+                                <div class="shortcut-item"><kbd>Esc</kbd><span>Cancel editing</span></div>
                             </div>
                         </div>
-
-                        <!-- Quick Help (Collapsible) -->
-                        <div class="help-panel">
-                            <button class="help-toggle" onclick="toggleHelp()">
-                                ❓ Keyboard Shortcuts <span id="help-arrow">▶</span>
-                            </button>
-                            
-                            <div id="help-content" class="help-content" style="display: none;">
-                                <div class="shortcut-grid">
-                                    <div class="shortcut-item">
-                                        <kbd>Enter</kbd>
-                                        <span>Create sibling</span>
-                                    </div>
-                                    <div class="shortcut-item">
-                                        <kbd>Tab</kbd>
-                                        <span>Create child</span>
-                                    </div>
-                                    <div class="shortcut-item">
-                                        <kbd>Double-Click</kbd>
-                                        <span>Edit node</span>
-                                    </div>
-                                    <div class="shortcut-item">
-                                        <kbd>Delete</kbd>
-                                        <span>Delete node</span>
-                                    </div>
-                                    <div class="shortcut-item">
-                                        <kbd>Esc</kbd>
-                                        <span>Cancel editing</span>
-                                    </div>
-                                </div>
+                        <!-- View Options Card -->
+                        <div class="view-options-card">
+                            <div class="view-options-header">
+                                <span class="view-options-icon">👁️</span>
+                                <span class="view-options-title">View Options</span>
+                            </div>
+                            <div>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="view-sequence-checkbox" />
+                                    <span>Show Sequence Numbers</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="view-metadata-checkbox" />
+                                    <span>Show Invested Elapsed Time and Dates</span>
+                                </label>
                             </div>
                         </div>
                     </div>
             </div>
             </div>
-        </div>        <script src="jsmind/es6/jsmind.js"></script>
+        </div>
+        <script src="jsmind/es6/jsmind.js"></script>
         <script src="jsmind/es6/jsmind.draggable-node.js"></script>
         <script type="text/javascript">
             // Global variable to track current selected node
@@ -3603,6 +3623,43 @@
             // Initialize when page loads
             window.addEventListener('load', function() {
                 initializeMindMap();
+
+                // Sync View Options checkboxes with global state
+                var seqCheckbox = document.getElementById('view-sequence-checkbox');
+                var metaCheckbox = document.getElementById('view-metadata-checkbox');
+                // Also sync with the main settings panel checkboxes
+                var mainSeqCheckbox = document.getElementById('show-sequences');
+                var mainMetaCheckbox = document.getElementById('show-dates-times');
+                if (seqCheckbox) seqCheckbox.checked = !!showSequences;
+                if (metaCheckbox) metaCheckbox.checked = !!showMetadata;
+                if (mainSeqCheckbox) mainSeqCheckbox.checked = !!showSequences;
+                if (mainMetaCheckbox) mainMetaCheckbox.checked = !!showMetadata;
+
+                // Handlers for View Options (card)
+                if (seqCheckbox) {
+                    seqCheckbox.addEventListener('change', function() {
+                        if (mainSeqCheckbox) mainSeqCheckbox.checked = seqCheckbox.checked;
+                        toggleSequenceDisplay();
+                    });
+                }
+                if (metaCheckbox) {
+                    metaCheckbox.addEventListener('change', function() {
+                        if (mainMetaCheckbox) mainMetaCheckbox.checked = metaCheckbox.checked;
+                        toggleFullMetadata();
+                    });
+                }
+
+                // Handlers for main settings panel (keep card in sync)
+                if (mainSeqCheckbox) {
+                    mainSeqCheckbox.addEventListener('change', function() {
+                        if (seqCheckbox) seqCheckbox.checked = mainSeqCheckbox.checked;
+                    });
+                }
+                if (mainMetaCheckbox) {
+                    mainMetaCheckbox.addEventListener('change', function() {
+                        if (metaCheckbox) metaCheckbox.checked = mainMetaCheckbox.checked;
+                    });
+                }
             });
         </script>
     </body>
