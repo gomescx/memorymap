@@ -867,12 +867,7 @@
                     <div class="controls-panel">
                         <!-- Primary Actions Bar -->
                         <div class="primary-actions">
-                            <div class="action-group">
-                                <h3>🎯 Mind Map Actions</h3>
-                                <button onclick="updateSequences()" class="btn btn-primary">
-                                    🔄 Update Sequences
-                                </button>
-                            </div>
+
 
                             <div class="action-group">
                                 <h3>💾 Data Management</h3>
@@ -1502,31 +1497,7 @@
                 console.log('✓ Sequence event listeners set up');
             }
 
-            // Wrapper function for button
-            function updateSequences() {
-                // Update the sequence data
-                var success = updateAllSequenceNumbers();
-                
-                // If sequences are currently visible, refresh the display
-                var sequenceCheckbox = document.getElementById('show-sequences');
-                if (success && sequenceCheckbox && sequenceCheckbox.checked) {
-                    // Force refresh deterministically
-                    toggleSequenceDisplay(true);
-                    console.log('✓ Sequence display refreshed');
-                }
-                
-                // If metadata is currently visible, refresh the display
-                var metadataCheckbox = document.getElementById('show-dates-times');
-                if (success && metadataCheckbox && metadataCheckbox.checked) {
-                    // Force refresh deterministically
-                    toggleFullMetadata(true);
-                    console.log('✓ Metadata display refreshed');
-                }
-                
-                if (success) {
-                    console.log('✓ Update Sequences completed with UI refresh');
-                }
-            }
+
             
             // ===== END SEQUENCE AND METADATA SYSTEM =====
             

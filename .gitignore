@@ -31,3 +31,6 @@ coverage/
 
 # Test results
 test-results/
+
+# Project-specific directories
+PEP Memory Map MVP UI Redesign/
