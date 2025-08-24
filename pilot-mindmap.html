@@ -876,6 +876,14 @@
                 <button onclick="createSampleMap()" class="btn btn-sample topbar-btn">
                     <span class="topbar-btn-icon">🌟</span> Sample Map
                 </button>
+                <button 
+                    class="btn btn-primary topbar-btn" 
+                    style="background: #24292e; color: #fff;" 
+                    onclick="window.open('https://github.com/gomescx/memorymap/issues/new', '_blank')"
+                    title="Open the GitHub issues page to report a problem or suggest an improvement."
+                >
+                    <span class="topbar-btn-icon">📣</span> Issues & Suggestions
+                </button>
                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
             </div>
         </div>
@@ -958,22 +966,7 @@
                     <!-- New Improved Controls Panel -->
                     <div class="controls-panel">
                         <!-- Primary Actions Bar -->
-                        <div class="primary-actions">
-                            <div class="action-group">
-                                <h3>📣 Feedback & Suggestions</h3>
-                                <button 
-                                    class="btn btn-primary" 
-                                    style="background: #24292e; color: #fff;" 
-                                    onclick="window.open('https://github.com/gomescx/memorymap/issues/new', '_blank')"
-                                    title="This will open a simple form where you can send feedback directly to the project team."
-                                >
-                                    📣 Report a Problem or Suggest an Improvement
-                                </button>
-                                <p class="help-text">
-                                    Click to open a feedback form. You can describe any problems or ideas for improvement. No technical knowledge needed.
-                                </p>
-                            </div>
-                        </div>
+                        <!-- Feedback & Suggestions section removed and button moved to top bar -->
 
                         <!-- Settings Panel (Collapsible) -->
                         <div class="settings-panel">
