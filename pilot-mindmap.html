@@ -1472,8 +1472,8 @@
                     return;
                 }
 
-                // Determine desired state from checkbox (unless called programmatically without a checkbox)
-                var checkbox = document.getElementById('show-sequences');
+                // Determine desired state from checkbox (check both possible IDs)
+                var checkbox = document.getElementById('show-sequences') || document.getElementById('view-sequence-checkbox');
                 showSequences = checkbox ? checkbox.checked : showSequences;
 
                 // If caller requested a force refresh, use the optimized full-refresh helper
@@ -1531,8 +1531,8 @@
                     return;
                 }
 
-                // Determine desired state from checkbox (unless called programmatically without a checkbox)
-                var checkbox = document.getElementById('show-dates-times');
+                // Determine desired state from checkbox (check both possible IDs)
+                var checkbox = document.getElementById('show-dates-times') || document.getElementById('view-metadata-checkbox');
                 showMetadata = checkbox ? checkbox.checked : showMetadata;
 
                 // If caller requested a force refresh, use the optimized full-refresh helper
@@ -2258,7 +2258,7 @@
                     return;
                 }
                 
-                const metadataCheckbox = document.getElementById('show-dates-times');
+                const metadataCheckbox = document.getElementById('show-dates-times') || document.getElementById('view-metadata-checkbox');
                 const shouldShowMetadata = metadataCheckbox && metadataCheckbox.checked;
                 
                 console.log('Force refreshing all metadata, should show:', shouldShowMetadata);
@@ -2332,7 +2332,7 @@
                     return;
                 }
                 
-                const sequenceCheckbox = document.getElementById('show-sequences');
+                const sequenceCheckbox = document.getElementById('show-sequences') || document.getElementById('view-sequence-checkbox');
                 const shouldShowSequences = sequenceCheckbox && sequenceCheckbox.checked;
                 
                 console.log('Force refreshing all sequences, should show:', shouldShowSequences);
