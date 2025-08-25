@@ -920,6 +920,11 @@
             background: #e6f4ea;
             outline: none;
         }
+    /* Minimal icon color classes for topbar actions */
+    .topbar-icon-btn.icon-save { color: #16a34a; }    /* green */
+    .topbar-icon-btn.icon-load { color: #06b6d4; }    /* cyan */
+    .topbar-icon-btn.icon-sample { color: #f59e0b; }  /* amber */
+    .topbar-icon-btn.icon-feedback { color: #6366f1; }/* indigo */
         </style>
     </head>
 
@@ -933,35 +938,52 @@
             <div class="topbar-actions">
                 <button
                     onclick="downloadMindMap()"
-                    class="topbar-icon-btn"
+                    class="topbar-icon-btn icon-save"
                     title="Save Memory Map"
                     aria-label="Save Memory Map"
                 >
-                    <span class="topbar-btn-icon" style="font-size: 1.7em; margin: 0;">💾</span>
+                    <!-- Save icon (lucide: Save) -->
+                    <svg class="topbar-btn-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
                 </button>
                 <button
                     onclick="document.getElementById('file-input').click()"
-                    class="topbar-icon-btn"
+                    class="topbar-icon-btn icon-load"
                     title="Load Memory Map"
                     aria-label="Load Memory Map"
                 >
-                    <span class="topbar-btn-icon" style="font-size: 1.7em; margin: 0;">📂</span>
+                    <!-- FolderOpen icon (lucide: FolderOpen) -->
+                    <svg class="topbar-btn-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
                 </button>
                 <button
                     onclick="createSampleMap()"
-                    class="topbar-icon-btn"
+                    class="topbar-icon-btn icon-sample"
                     title="Sample Map"
                     aria-label="Sample Map"
                 >
-                    <span class="topbar-btn-icon" style="font-size: 1.7em; margin: 0;">🧩</span>
+                    <!-- Map icon (lucide: Map) -->
+                    <svg class="topbar-btn-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polygon points="1 6 8 3 16 6 23 3 23 18 16 21 8 18 1 21 1 6"></polygon>
+                        <line x1="8" y1="3" x2="8" y2="18"></line>
+                        <line x1="16" y1="6" x2="16" y2="21"></line>
+                    </svg>
                 </button>
                 <button 
                     onclick="window.open('https://github.com/gomescx/memorymap/issues/new', '_blank')"
-                    class="topbar-icon-btn"
+                    class="topbar-icon-btn icon-feedback"
                     title="Issues & Suggestions"
                     aria-label="Issues & Suggestions"
                 >
-                    <span class="topbar-btn-icon" style="font-size: 1.7em; margin: 0;">💬</span>
+                    <!-- MessageCircle icon (lucide: MessageCircle) -->
+                    <svg class="topbar-btn-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.9-12.3 8.38 8.38 0 0 1 3.8.9"></path>
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                    </svg>
                 </button>
                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
             </div>
@@ -1024,9 +1046,6 @@
                         <div style="text-align: center;">
                             <button onclick="exportActionPlan()" class="btn btn-export" title="Export all tasks or selected tasks (if any are selected)">
                                 📋 Action Plan (CSV)
-                            </button>
-                            <button onclick="exportSelectedMindMap()" class="btn btn-export" title="Export memory-map JSON with only selected nodes">
-                                🗺️ Memory Map (JSON)
                             </button>
                             <p class="help-text">Exports only selected tasks</p>
                         </div>
