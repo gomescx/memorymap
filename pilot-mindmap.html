@@ -362,10 +362,18 @@
                 text-align: center;
             }
 
-            .action-plan-table .date-col {
-                width: 15%;
-                min-width: 80px;
+            .action-plan-table .date-display-col {
+                width: 12%;
+                min-width: 70px;
                 text-align: center;
+                font-size: 11px;
+            }
+
+            .action-plan-table .date-picker-col {
+                width: 6%;
+                min-width: 30px;
+                text-align: center;
+                position: relative;
             }
 
             .action-plan-table input[type="text"],
@@ -493,8 +501,12 @@
                     width: 16%;
                 }
                 
-                .action-plan-table .date-col {
-                    width: 16%;
+                .action-plan-table .date-display-col {
+                    width: 12%;
+                }
+                
+                .action-plan-table .date-picker-col {
+                    width: 6%;
                 }
             }
 
@@ -1016,7 +1028,8 @@
                                     <th class="sequence-col">#</th>
                                     <th class="time-col">Invested (hrs)</th>
                                     <th class="time-col">Elapsed (days)</th>
-                                    <th class="date-col">Start Date</th>
+                                    <th class="date-display-col">Start Date</th>
+                                    <th class="date-picker-col">📅</th>
                                 </tr>
                             </thead>
                             <tbody id="action-plan-tbody">
@@ -1032,7 +1045,8 @@
                                     <td class="sequence-col" id="total-count">0</td>
                                     <td class="time-col" id="total-invested">0.0</td>
                                     <td class="time-col" id="total-elapsed">0.0</td>
-                                    <td class="date-col" id="max-start-date">-</td>
+                                    <td class="date-display-col" id="max-start-date">-</td>
+                                    <td class="date-picker-col"></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -1984,16 +1998,53 @@
                 });
                 elapsedCell.appendChild(elapsedInput);
                 
-                // Start date cell
-                const dateCell = document.createElement('td');
-                dateCell.className = 'date-col';
+                // Date display cell (read-only)
+                const dateDisplayCell = document.createElement('td');
+                dateDisplayCell.className = 'date-display-col';
+                const dateDisplay = document.createElement('span');
+                dateDisplay.textContent = data.start_date ? formatDateForDisplay(data.start_date) : '';
+                dateDisplay.style.fontSize = '11px';
+                dateDisplayCell.appendChild(dateDisplay);
+
+                // Date picker cell (hidden input with visible icon)
+                const datePickerCell = document.createElement('td');
+                datePickerCell.className = 'date-picker-col';
                 const dateInput = document.createElement('input');
                 dateInput.type = 'date';
                 dateInput.value = data.start_date || '';
+                dateInput.style.opacity = '0';
+                dateInput.style.position = 'absolute';
+                dateInput.style.width = '20px';
+                dateInput.style.height = '20px';
+                dateInput.style.left = '50%';
+                dateInput.style.top = '50%';
+                dateInput.style.transform = 'translate(-50%, -50%)';
                 dateInput.setAttribute('data-field', 'start_date');
-                dateInput.addEventListener('change', () => saveRowChanges(row));
-                dateInput.addEventListener('blur', () => saveRowChanges(row));
-                dateCell.appendChild(dateInput);
+
+                const pickerIcon = document.createElement('span');
+                pickerIcon.textContent = '📅';
+                pickerIcon.style.cursor = 'pointer';
+                pickerIcon.style.fontSize = '14px';
+                pickerIcon.style.position = 'relative';
+                pickerIcon.style.zIndex = '1';
+                
+                // Click handler for the icon
+                pickerIcon.onclick = () => {
+                    dateInput.showPicker();
+                };
+
+                datePickerCell.appendChild(dateInput);
+                datePickerCell.appendChild(pickerIcon);
+
+                // Add event listeners to update display when date changes
+                dateInput.addEventListener('change', () => {
+                    dateDisplay.textContent = dateInput.value ? formatDateForDisplay(dateInput.value) : '';
+                    saveRowChanges(row);
+                });
+                dateInput.addEventListener('blur', () => {
+                    dateDisplay.textContent = dateInput.value ? formatDateForDisplay(dateInput.value) : '';
+                    saveRowChanges(row);
+                });
                 
                 // Assemble row (handle first)
                 row.appendChild(handleCell);
@@ -2002,7 +2053,8 @@
                 row.appendChild(seqCell);
                 row.appendChild(investedCell);
                 row.appendChild(elapsedCell);
-                row.appendChild(dateCell);
+                row.appendChild(dateDisplayCell);
+                row.appendChild(datePickerCell);
                 // Make the handle the drag start target (row is draggable but only via handle)
                 // ensure the row itself is not draggable by default to avoid accidental drags
                 row.removeAttribute('draggable');
