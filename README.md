@@ -25,13 +25,14 @@ A customizable mind mapping tool based on jsMind with FreeMind-like keyboard sho
 ## 🎯 Getting Started
 
 1. **Start local server:**
+
    ```bash
    cd jsmind-poc
    python3 -m http.server 8000
    ```
 
 2. **Access the applications:**
-   - **Pilot Version**: http://localhost:8000/pilot-mindmap.html
+   - **Pilot Version**: <http://localhost:8000/pilot-mindmap.html>
 
 ## 📁 Project Structure
 

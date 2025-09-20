@@ -164,3 +164,18 @@
 
 ---
 
+### 🔧 Feature 9: Due Date and  
+
+#### User Stories
+1. - As a user I can enter the Due Date for each node
+2. - As a user when I update the Invested time the Elapsed time gets populated if the Elapsed time is empty
+3. - As a user when I update the Elapsed time the Due Date gets populated if the Due date is empty
+4. - As a user I can click a button to update all Due Dates based on Start Dates and Elapsed days columns
+
+#### AC:
+1. -  The Due Date column has a separate column for the date picker similar to the Start Date
+2. - The Side pane [Action Plan] is expanded to accommodate the new columns
+
+
+
+
